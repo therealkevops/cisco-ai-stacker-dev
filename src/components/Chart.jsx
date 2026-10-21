@@ -8,7 +8,7 @@ const PANEL_W = 340;
 
 // The canvas, the physics loop and the pointer handling. Everything that changes every frame lives
 // in refs; React state only carries the things the rest of the page reads.
-export default function Chart({ selectedId, onSelect, hiddenTypes, matchIds, gravity, drift, resetKey }) {
+export default function Chart({ selectedId, onSelect, hiddenTypes, matchIds, gravity, resetKey }) {
   const canvasRef = useRef(null);
   const worldRef = useRef(null);
   const viewRef = useRef({ x: 0, y: 0, k: 1 });
@@ -18,7 +18,7 @@ export default function Chart({ selectedId, onSelect, hiddenTypes, matchIds, gra
 
   // The animation loop reads the latest props from this ref instead of restarting on every change.
   useEffect(() => {
-    propsRef.current = { selectedId, hiddenTypes, matchIds, gravity, drift, onSelect };
+    propsRef.current = { selectedId, hiddenTypes, matchIds, gravity, onSelect };
   });
 
   useEffect(() => {
@@ -66,7 +66,7 @@ export default function Chart({ selectedId, onSelect, hiddenTypes, matchIds, gra
       const focusId = p.selectedId || null;
       const focus = focusId ? world.index.get(focusId) : -1;
       while (acc >= DT) {
-        step(world, { gravity: p.gravity, drift: p.drift ? 1 : 0, focus });
+        step(world, { gravity: p.gravity, focus });
         acc -= DT;
       }
       // While the detail panel is open, ease the chart into the space left of it: slide it over and

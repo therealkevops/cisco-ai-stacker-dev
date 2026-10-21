@@ -15,8 +15,6 @@ export default function App() {
   const [query, setQuery] = useState('');
   const [hiddenTypes, setHiddenTypes] = useState(() => new Set());
   const [gravity, setGravity] = useState(1);
-  const reduced = useMemo(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches, []);
-  const [drift, setDrift] = useState(!reduced);
   const [resetKey, setResetKey] = useState(0);
 
   // The selection lives in the URL hash, so a view can be shared as a link.
@@ -62,14 +60,13 @@ export default function App() {
         selectedId={selectedId} onSelect={onSelect}
         hiddenTypes={hiddenTypes} toggleType={toggleType}
         gravity={gravity} setGravity={setGravity}
-        drift={drift} setDrift={setDrift}
         onReset={() => setResetKey((k) => k + 1)}
       />
       <main className="stage">
         <Chart
           selectedId={selectedId} onSelect={onSelect}
           hiddenTypes={hiddenTypes} matchIds={matchIds}
-          gravity={gravity} drift={drift} resetKey={resetKey}
+          gravity={gravity} resetKey={resetKey}
         />
         <Detail nodeId={selectedId} onSelect={onSelect} onClose={() => onSelect(null)} />
         {!selectedId && <p className="hint">Drag a body, scroll to zoom, select one to pull in its integrations.</p>}

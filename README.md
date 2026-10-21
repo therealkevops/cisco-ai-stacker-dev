@@ -2,7 +2,7 @@
 
 An interactive chart of the Cisco AI stack and the integrations between its parts, drawn as an orrery. Each layer is an orbit, each product or partner is a body on it, and each integration is a line between two bodies.
 
-Heavy hardware sits on the inner orbits and software and agents on the outer ones. Every body is held to its orbit by a spring ("gravity"), pushed apart from its neighbours, and tugged by its integrations. The orbits turn slowly, in opposite directions on neighbouring rings.
+Heavy hardware sits on the inner orbits and software and agents on the outer ones. Every body is held to its orbit by a spring ("gravity"), pushed apart from its neighbours, and tugged by its integrations.  The chart is still at rest, so labels stay readable.
 
 ## Using it
 

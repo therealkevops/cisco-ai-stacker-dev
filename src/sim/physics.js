@@ -1,10 +1,9 @@
 // The orrery's physics. No DOM in here, so it runs under node --test.
 //
-// Every body feels four forces:
+// Every body feels three forces:
 //   ring     a spring toward its layer's orbit (the "gravity well"), strength set by `gravity`
 //   repel    a soft push away from nearby bodies, so labels stay readable
 //   link     a weak spring along each integration, which sorts connected bodies into neighbours
-//   drift    a slow tangential push; adjacent orbits turn in opposite directions like gears
 // Selecting a body adds a fifth: its integration partners are released from their orbits a little
 // and fall toward it, then settle back when it is deselected.
 
@@ -23,7 +22,6 @@ const LINK_MAX_STRETCH = 40; // beyond this a link stops pulling harder, so orbi
 const K_FOCUS = 1.5;
 const FOCUS_RELAX = 0.3;
 const DAMPING = 0.92;
-const DRIFT_RAD_PER_S = 0.006;
 
 export function mulberry32(seed) {
   let a = seed >>> 0;
@@ -54,9 +52,6 @@ export function createWorld(layers, nodes, links, seed = 11) {
     placed.set(n.layer, slot + 1);
     const ring = layer.r * WORLD_R;
     const angle = li * 0.9 + (slot / perLayer.get(n.layer)) * Math.PI * 2 + (rand() - 0.5) * 0.25;
-    // Tangential speed follows a Kepler-ish falloff; neighbouring orbits run in opposite directions.
-    const dir = li % 2 === 0 ? 1 : -1;
-    const speed = dir * DRIFT_RAD_PER_S * WORLD_R * Math.pow(Math.max(layer.r, 0.12), -0.5);
     return {
       id: n.id,
       layer: n.layer,
@@ -67,7 +62,6 @@ export function createWorld(layers, nodes, links, seed = 11) {
       y: Math.sin(angle) * ring,
       vx: 0,
       vy: 0,
-      driftForce: (speed * (1 - DAMPING)) / DT,
       pinned: false,
     };
   });
@@ -95,9 +89,9 @@ export function createWorld(layers, nodes, links, seed = 11) {
   };
 }
 
-// Advance the world one fixed step. `gravity` scales the orbit springs, `drift` scales the slow
-// turning (0 freezes it), `focus` is the index of the selected body or -1.
-export function step(world, { gravity = 1, drift = 1, focus = -1 } = {}) {
+// Advance the world one fixed step. `gravity` scales the orbit springs and `focus` is the index of
+// the selected body or -1. At rest the chart is still; bodies only move when dragged or selected.
+export function step(world, { gravity = 1, focus = -1 } = {}) {
   const { bodies, pairs, strength, neighbours, fx, fy } = world;
   const n = bodies.length;
   fx.fill(0);
@@ -114,8 +108,6 @@ export function step(world, { gravity = 1, drift = 1, focus = -1 } = {}) {
     const pull = -K_RING * gravity * (released ? FOCUS_RELAX : 1) * (r - b.ring);
     fx[i] += pull * ux;
     fy[i] += pull * uy;
-    fx[i] += -uy * b.driftForce * drift;
-    fy[i] += ux * b.driftForce * drift;
     if (released) {
       fx[i] += K_FOCUS * (anchor.x - b.x);
       fy[i] += K_FOCUS * (anchor.y - b.y);
@@ -176,6 +168,6 @@ export function step(world, { gravity = 1, drift = 1, focus = -1 } = {}) {
 }
 
 // Run the simulation without drawing, so the first frame is already a settled chart.
-export function settle(world, steps = 500, opts = { drift: 0 }) {
-  for (let i = 0; i < steps; i++) step(world, opts);
+export function settle(world, steps = 500) {
+  for (let i = 0; i < steps; i++) step(world);
 }

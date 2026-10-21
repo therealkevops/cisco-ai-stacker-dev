@@ -17,7 +17,7 @@ function Swatch({ type }) {
   );
 }
 
-export default function Sidebar({ query, setQuery, matchIds, selectedId, onSelect, hiddenTypes, toggleType, gravity, setGravity, drift, setDrift, onReset }) {
+export default function Sidebar({ query, setQuery, matchIds, selectedId, onSelect, hiddenTypes, toggleType, gravity, setGravity, onReset }) {
   const onSearchKey = (e) => {
     if (e.key === 'Enter' && matchIds && matchIds.size) {
       onSelect(NODES.find((n) => matchIds.has(n.id)).id);
@@ -55,9 +55,6 @@ export default function Sidebar({ query, setQuery, matchIds, selectedId, onSelec
           <output>{gravity.toFixed(2)}</output>
         </label>
         <div className="row buttons">
-          <button type="button" aria-pressed={drift} onClick={() => setDrift(!drift)}>
-            {drift ? 'Orbiting' : 'Held still'}
-          </button>
           <button type="button" onClick={onReset}>Reset layout</button>
         </div>
       </section>
