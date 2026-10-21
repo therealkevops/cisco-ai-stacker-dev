@@ -1,0 +1,106 @@
+// The same customer scenarios as usecases.js, with the needs written in NVIDIA's products. Each
+// design a use case lists is a published NVIDIA document (a reference architecture, deployment guide
+// or validated design) and must meet every required need.
+
+import { NV } from './nvidia-urls.js';
+
+export const NVIDIA_USE_CASES = [
+  {
+    id: 'enterprise-rag',
+    name: 'Enterprise RAG assistant',
+    status: 'sourced',
+    url: NV.eraRagGuide,
+    summary:
+      'Answer questions from the company\'s own documents with a retrieval-augmented generation pipeline: NeMo Retriever to extract and embed the documents, NIM microservices for the language model, embedding and reranking, and a GPU-indexed vector database, running on infrastructure the company controls.',
+    caveat: 'NVIDIA\'s own blueprint pages name no reference architecture and do not mention AI Enterprise: both come from the Enterprise RAG Deployment Guide in the reference architecture docs. That guide is inconsistent with itself in places (the architecture name, and servers per scalable unit), and the blueprint\'s default vector database is Elasticsearch, so cuVS is required only for the guide\'s Milvus setup.',
+    designs: ['era-rag'],
+    needs: [
+      { products: ['ai-blueprints'], role: 'required', why: 'The guide deploys the NVIDIA AI Blueprint for RAG, version 2.5.0, as the core of the solution.' },
+      { products: ['nim'], role: 'required', why: 'The language model, embedding and reranking microservices are the model-serving layer.' },
+      { products: ['nemo-retriever'], role: 'required', why: 'Extracts text, tables and charts from the documents and embeds them.' },
+      { products: ['cuvs'], role: 'required', why: 'Milvus with cuVS builds the vector indexes on the GPU in the guide\'s configuration.' },
+      { products: ['k8s-operators'], role: 'required', why: 'The NIM Operator deploys and scales the microservices, alongside the GPU and Network Operators.' },
+      { products: ['nvidia-ai-enterprise'], role: 'required', why: 'The guide says the stack needs an AI Enterprise entitlement.' },
+      { products: ['rtx-pro-servers', 'h200-nvl'], role: 'required', why: 'The two GPU options the RAG guides are sized for: RTX PRO 6000 Blackwell Server Edition or H200 NVL.' },
+      { products: ['base-command-manager', 'k8s-platforms'], role: 'required', why: 'A Kubernetes platform: the guide deploys upstream Kubernetes with Base Command Manager, and the blueprint is separately validated on OpenShift.' },
+      { products: ['run-ai'], role: 'recommended', why: 'The guide uses Run:ai for GPU fractions; multi-instance GPU is its stated alternative, so it is not mandatory.' },
+      { products: ['ai-data-platform'], role: 'recommended', why: 'NVIDIA positions the RAG blueprint as a layer of the AI Data Platform. No page makes it a prerequisite.' },
+      { products: ['certified-storage'], role: 'recommended', why: 'The reference architecture designates endpoints for certified storage, but the RAG guide itself uses NFS and Longhorn.' },
+      { products: ['nemo-guardrails'], role: 'recommended', why: 'An optional guardrails module in the blueprint.' },
+    ],
+  },
+  {
+    id: 'enterprise-ai-cluster',
+    name: 'GPU cluster for enterprise AI',
+    status: 'draft',
+    url: NV.eraDeepDive,
+    summary:
+      'A dedicated GPU cluster for in-house inference and fine-tuning, built to an NVIDIA Enterprise Reference Architecture: eight-GPU servers or NVL72 racks joined by a lossless Ethernet fabric, managed as one system.',
+    caveat: 'The HGX and NVL72 reference architecture pages could be read only as tables of contents, so their software, storage and security details are unconfirmed; the software needs come from the RTX PRO reference architecture and its deployment guides. NVIDIA\'s pages disagree on some labels. The RTX PRO design is inference first, HGX adds training, and NVL72 is for the heaviest work. DGX SuperPOD is left out as far larger than this scenario.',
+    designs: ['era-rtx-pro', 'era-hgx-h200', 'era-hgx-b300', 'era-nvl72'],
+    needs: [
+      { products: ['rtx-pro-servers', 'hgx', 'h200-nvl', 'gb300-nvl72', 'dgx'], role: 'required', why: 'The GPU system the chosen reference architecture is built on: RTX PRO or H200 NVL for inference first, HGX for training and fine-tuning, or an NVL72 rack for the largest jobs.' },
+      { products: ['spectrum-x'], role: 'required', why: 'The east-west fabric in each reference architecture is Spectrum-X Ethernet.' },
+      { products: ['bluefield', 'connectx'], role: 'required', why: 'BlueField-3 handles north-south traffic in every reference architecture; SuperNICs carry the east-west traffic on HGX B300 and NVL72.' },
+      { products: ['nvidia-ai-enterprise'], role: 'required', why: 'The software stack the reference architectures name.' },
+      { products: ['base-command-manager'], role: 'required', why: 'Deploys the cluster and Kubernetes in the reference architecture guides.' },
+      { products: ['certified-storage'], role: 'required', why: 'Each reference architecture designates network endpoints for NVIDIA-Certified Storage. The program page calls storage a complementary effort.' },
+      { products: ['k8s-operators'], role: 'recommended', why: 'The GPU and Network Operators are in the RTX PRO deployment guides. The HGX and NVL72 pages were not readable.' },
+      { products: ['run-ai'], role: 'recommended', why: 'GPU scheduling across inference and fine-tuning jobs. Stated as part of the software stack, not as mandatory.' },
+      { products: ['mission-control'], role: 'recommended', why: 'Named for DGX Blackwell and NVL72 systems, not for HGX or RTX PRO.' },
+      { products: ['nim'], role: 'recommended', why: 'Inference serving. Editorial: no reference architecture prescribes a serving layer.' },
+      { products: ['nemo'], role: 'recommended', why: 'Fine-tuning. Editorial: no reference architecture prescribes a fine-tuning toolchain.' },
+      { products: ['confidential-computing'], role: 'recommended', why: 'The reference architecture security tab publishes confidential computing guides.' },
+      { products: ['cisco-ai-defense'], role: 'recommended', why: 'NVIDIA\'s white paper lists it as a guardrails integration. Editorial for this scenario.' },
+    ],
+  },
+  {
+    id: 'agentic-ai',
+    name: 'Agentic AI assistants',
+    status: 'sourced',
+    url: NV.eraAiQ,
+    summary:
+      'Agents that use tools and company data and act on a user\'s behalf, run on infrastructure the company controls: an agent platform on GPU servers, a data layer the agents can search, and security that watches what the agents do.',
+    caveat: 'The validated document describes an older AI-Q architecture (Nemotron 49B and Llama 70B with Milvus) than the current AI-Q docs, which give no hardware sizing. The test used an external web-search service, so a fully private deployment has to replace it. Sentry is announced only, with no date; OpenShell is shipping. NeMo Microservices carries a 1 October 2026 sunset notice, so component names are changing.',
+    designs: ['era-ai-q'],
+    needs: [
+      { products: ['ai-q'], role: 'required', why: 'The deep-research agent blueprint, self-hosted on the company\'s own models, data and policy controls.' },
+      { products: ['nemo-agent-toolkit'], role: 'required', why: 'AI-Q is built on it: workflow, evaluation, observability and the MCP server and client.' },
+      { products: ['nim'], role: 'required', why: 'The models are served as NIM microservices.' },
+      { products: ['nemo-retriever'], role: 'required', why: 'Extraction and embedding for the retrieval layer the agent queries.' },
+      { products: ['rtx-pro-servers', 'cisco-ucs'], role: 'required', why: 'The validation ran on certified RTX PRO 6000 servers; Cisco UCS is a listed NVIDIA-endorsed way to build the same reference architecture.' },
+      { products: ['spectrum-x'], role: 'required', why: 'The reference architecture uses Spectrum-X Ethernet, tested with SN5600 switches.' },
+      { products: ['bluefield'], role: 'required', why: 'Five BlueField-3 per tested node: four east-west and one north-south.' },
+      { products: ['k8s-operators'], role: 'required', why: 'Base Command Manager deploys the GPU, Network and NIM Operators the stack runs on.' },
+      { products: ['base-command-manager'], role: 'required', why: 'Images the servers and deploys Kubernetes in the validated stack.' },
+      { products: ['nvidia-ai-enterprise'], role: 'recommended', why: 'Several of the components ship in it and Nemotron NIMs need its licence, but the AI-Q pages do not say AI-Q requires it.' },
+      { products: ['nemo-guardrails'], role: 'recommended', why: 'Tool-call and output rails. Editorial: the validated stack does not install it.' },
+      { products: ['openshell'], role: 'recommended', why: 'A shipping sandbox for agent-generated code, and an AI-Q deployment option.' },
+      { products: ['sentry'], role: 'recommended', why: 'An out-of-band agent monitor on BlueField-4. Announced, no availability date.' },
+      { products: ['ai-data-platform'], role: 'recommended', why: 'Editorial: NVIDIA\'s reference design for preparing data for agents, with a deep research agent as a reference workflow.' },
+      { products: ['dynamo'], role: 'recommended', why: 'Editorial and weakly evidenced: NVIDIA\'s agentic page lists it for multi-node serving; the AI-Q pages do not use it.' },
+    ],
+  },
+  {
+    id: 'secure-private-ai',
+    name: 'Secure private AI for regulated data',
+    status: 'sourced',
+    url: NV.bluefieldSecurityBlog,
+    summary:
+      'AI that runs on the customer\'s own infrastructure because the data cannot leave, with security built in at each layer: protection for the models and applications, enforcement between workloads, and detection and response.',
+    caveat: 'Positioning, not certification: NVIDIA says its partner products are validated on RTX PRO Servers with BlueField, and gives no test data or compliance mapping. The January 2026 blog does not name Cisco. Confidential computing, guardrails and OpenShell are NVIDIA products outside that validated design, so they are recommended. BlueField-4, which Sentry needs, has no shipping confirmation.',
+    designs: ['era-secure'],
+    needs: [
+      { products: ['rtx-pro-servers', 'cisco-ucs'], role: 'required', why: 'Every partner solution in the validated design runs on RTX PRO Servers; Cisco UCS is a listed way to build the same reference architecture.' },
+      { products: ['bluefield'], role: 'required', why: 'The validated design adds BlueField for isolated zero-trust security and acceleration.' },
+      { products: ['doca-security'], role: 'required', why: 'DOCA Argus telemetry drives the Check Point and Palo Alto Networks integrations; Argus and Flow are the detection and enforcement on the DPU.' },
+      { products: ['security-partners'], role: 'required', why: 'The validated design is the partner list: Check Point, Fortinet, Palo Alto Networks and Trend Micro among others.' },
+      { products: ['nvidia-ai-enterprise'], role: 'required', why: 'The software stack of the Enterprise AI Factory validated design: AI Enterprise, NIM and NeMo.' },
+      { products: ['confidential-computing'], role: 'recommended', why: 'Protects weights, prompts and data in use on Hopper, Blackwell and Rubin. NVIDIA says it does not certify a workload by itself.' },
+      { products: ['nemo-guardrails'], role: 'recommended', why: 'Input, output and tool-call rails, with PII masking and jailbreak and topic control.' },
+      { products: ['cisco-ai-defense'], role: 'recommended', why: 'NVIDIA\'s ecosystem page and the Guardrails docs name it as a runtime protection integration.' },
+      { products: ['openshell'], role: 'recommended', why: 'A shipping open-source agent sandbox that runs on premises without BlueField-4.' },
+      { products: ['sentry'], role: 'recommended', why: 'An out-of-band agent watchdog on BlueField-4. Announced, no date.' },
+    ],
+  },
+];

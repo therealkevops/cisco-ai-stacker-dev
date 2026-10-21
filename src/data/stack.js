@@ -20,6 +20,9 @@ export const SOURCES = {
   pod285: 'https://www.cisco.com/c/en/us/products/collateral/computing/servers-unified-computing-systems/ucs-c-series-rack-servers/ai-pod-nvidia-2-8-5-200-era.html',
   c845aDs: 'https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/ucs-c845a-m8-rack-server-ds.html',
   flashstackRag: 'https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flashstack_rag_nim.html',
+  agenticSo: 'https://www.cisco.com/c/en/us/solutions/collateral/artificial-intelligence/accelerate-agentic-ai-so.html',
+  aiDefensePods: 'https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/AI_defense_on_Cisco_AI_PODs_reference_architecture.html',
+  safCaseStudy: 'https://www.cisco.com/c/en/us/td/docs/solutions/CVD/DataCenter/Cisco_Secure_AI_Factory-Case_Study.html',
 };
 
 // The primitives: what an AI workload needs, each delivered by a set of products. `sector` is which

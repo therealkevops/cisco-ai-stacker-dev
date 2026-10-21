@@ -98,14 +98,13 @@ test('Cisco and partner entries are on the map only where an NVIDIA page names t
 });
 
 test('the reference architectures include what NVIDIA publishes, and the Cisco designs map onto them', () => {
-  assert.ok(nv.designs.length >= 5);
+  assert.ok(nv.designs.length >= 8);
   const rtx = nv.membersOf('era-rtx-pro');
   assert.ok(rtx.has('rtx-pro-servers') && rtx.has('bluefield') && rtx.has('spectrum-x') && rtx.has('certified-storage'));
   assert.ok(nv.membersOf('era-hgx-b300').has('connectx') && nv.membersOf('era-nvl72').has('gb300-nvl72'));
   assert.ok(nv.membersOf('dgx-superpod').has('quantum-x') && nv.membersOf('dgx-superpod').has('mission-control'));
   // Mission Control brings its own parts with it.
   assert.ok(nv.membersOf('dgx-superpod').has('base-command-manager') && nv.membersOf('dgx-superpod').has('ufm') && nv.membersOf('dgx-superpod').has('netq'));
-  assert.equal(nv.data.cases.length, 0, 'use cases are not written for the NVIDIA lens yet');
   for (const d of [...nv.designs, ...cisco.designs]) {
     for (const r of d.related || []) {
       assert.ok(MODELS[r.lens].nodeById.get(r.id)?.kind === 'design', `${d.id} -> ${r.lens}/${r.id}`);

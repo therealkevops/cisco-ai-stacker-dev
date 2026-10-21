@@ -9,6 +9,7 @@
 
 import { PRIMITIVES, LINK_TYPES } from './stack.js';
 import { NV } from './nvidia-urls.js';
+import { NVIDIA_USE_CASES } from './usecases-nvidia.js';
 import { NVIDIA_DETAILS, NVIDIA_PRIMITIVE_DETAILS, NVIDIA_PRIMITIVE_SUMMARIES } from './nvidia-details.js';
 
 const nv = (id, name, primitive, url, blurb, extra = {}) => ({ id, name, primitive, vendor: 'nvidia', status: 'sourced', url, blurb, ...extra });
@@ -61,6 +62,29 @@ const NVIDIA_NODES = [
       'Kubernetes, Slurm, NVIDIA AI Enterprise components and Base Command Manager',
     ],
     offMap: ['SN2201 out-of-band management switches'], },
+  { id: 'era-rag', name: 'Enterprise RAG on the RTX PRO ERA', short: 'RAG on RTX PRO ERA', kind: 'design', vendor: 'nvidia', status: 'sourced', url: NV.eraRagGuide,
+    blurb: 'NVIDIA\'s Enterprise RAG Deployment Guide (v2.0): the AI Blueprint for RAG on the RTX PRO AI Factory (2-8-5-200) reference architecture, with RTX PRO 6000 or H200 NVL GPUs, scaling from 4 to 16 nodes.',
+    bom: [
+      'The RTX PRO AI Factory (2-8-5-200) reference architecture, with RTX PRO 6000 or H200 NVL GPUs',
+      'NVIDIA AI Blueprint for RAG 2.5.0, deployed with the NIM Operator',
+      'NeMo Retriever extraction, and embedding, reranking and LLM NIM microservices',
+      'Milvus 2.6.10 with cuVS, building indexes on the GPU',
+      'Upstream Kubernetes deployed by Base Command Manager, with the GPU, Network and NIM Operators',
+      'An NVIDIA AI Enterprise entitlement',
+    ],
+    offMap: ['Milvus, Redis and Longhorn', 'NFS for the NIM cache', 'GPU fractions through Run:ai or MIG'] },
+  { id: 'era-ai-q', name: 'AI-Q Research Agent on the RTX PRO ERA', short: 'AI-Q on RTX PRO ERA', kind: 'design', vendor: 'nvidia', status: 'sourced', url: NV.eraAiQ,
+    blurb: 'NVIDIA\'s AI-Q Research Agent Blueprint, validated in the Enterprise Reference Architecture docs on the RTX PRO 2-8-5-200 configuration: a self-hosted deep-research agent with retrieval over company data.',
+    bom: [
+      'The RTX PRO AI Factory (2-8-5-200) reference architecture: nine servers with eight RTX PRO 6000 GPUs each in the test cluster',
+      'Five BlueField-3 per node, on Spectrum-X (SN5600) switches',
+      'AI-Q and the NeMo Agent Toolkit, with Nemotron and Llama models served as NIM microservices',
+      'NeMo Retriever and Milvus for retrieval',
+      'Base Command Manager deploying Kubernetes and the GPU, Network and NIM Operators, with Run:ai',
+    ],
+    offMap: ['Milvus', 'Nemotron and Llama models', 'Tavily web search (an external internet call)', 'Optional Phoenix tracing'] },
+  { id: 'era-secure', name: 'Enterprise AI Factory with BlueField security partners', short: 'Secure AI Factory ERA', kind: 'design', vendor: 'nvidia', status: 'sourced', url: NV.bluefieldSecurityBlog,
+    blurb: 'NVIDIA\'s Enterprise AI Factory validated design, extended in January 2026 with BlueField security partners validated on RTX PRO Servers. NVIDIA positioned the design for sovereign AI in government, finance and healthcare.' },
   { id: 'dgx-superpod', name: 'DGX SuperPOD', kind: 'design', vendor: 'nvidia', status: 'sourced', url: NV.superpod,
     blurb: 'NVIDIA\'s turnkey, full-stack AI factory design: compute, networking, storage, software and management, scaling to tens of thousands of GPUs. Published for B200, B300, GB200, GB300 and Vera Rubin.',
     bom: [
@@ -180,7 +204,24 @@ const NVIDIA_LINKS = [
   L('era-nvl72', 'base-command-manager', 'composes', 'Software stack: Base Command Manager, Slurm and Kubernetes'),
   S('era-nvl72', 'nvidia-ai-enterprise', 'composes', 'NVIDIA AI Enterprise components'),
   L('era-nvl72', 'k8s-platforms', 'composes', 'Kubernetes is part of the design\'s software stack'),
-  L('dgx-superpod', 'dgx', 'composes', 'DGX B200 / B300 are among the configurations'),
+  L('era-hgx-h200', 'certified-storage', 'composes', 'Designated network endpoints for NVIDIA-Certified Storage, as in the other reference architectures'),
+  L('era-rag', 'era-rtx-pro', 'composes', 'Built on the RTX PRO AI Factory reference architecture'),
+  S('era-rag', 'ai-blueprints', 'composes', 'The NVIDIA AI Blueprint for RAG, version 2.5.0'),
+  L('era-rag', 'nim', 'composes', 'LLM, embedding and reranking NIM microservices'),
+  L('era-rag', 'nemo-retriever', 'composes', 'Document extraction and embedding'),
+  L('era-rag', 'cuvs', 'composes', 'Milvus with cuVS builds GPU indexes'),
+  S('era-rag', 'k8s-operators', 'composes', 'The NIM Operator deploys and scales the NIMs, with the GPU and Network Operators'),
+  L('era-ai-q', 'era-rtx-pro', 'composes', 'Validated on the RTX PRO AI Factory (2-8-5-200) configuration'),
+  L('era-ai-q', 'ai-q', 'composes', 'The AI-Q Research Agent Blueprint'),
+  L('era-ai-q', 'nemo-agent-toolkit', 'composes', 'AI-Q is built on the NeMo Agent Toolkit'),
+  L('era-ai-q', 'nim', 'composes', 'Models served as NIM microservices'),
+  L('era-ai-q', 'nemo-retriever', 'composes', 'Retrieval over company data'),
+  L('era-ai-q', 'run-ai', 'composes', 'Installed in the validated stack'),
+  S('era-ai-q', 'k8s-operators', 'composes', 'Base Command Manager deploys the GPU, Network and NIM Operators'),
+  L('era-secure', 'era-rtx-pro', 'composes', 'Validated on RTX PRO Servers'),
+  L('era-secure', 'security-partners', 'composes', 'The BlueField security partners added in January 2026'),
+  L('era-secure', 'doca-security', 'composes', 'DOCA Argus telemetry drives several of the partner integrations'),
+    L('dgx-superpod', 'dgx', 'composes', 'DGX B200 / B300 are among the configurations'),
   L('dgx-superpod', 'quantum-x', 'composes', 'Quantum-X800 compute fabric'),
   L('dgx-superpod', 'spectrum-x', 'composes', 'SN5610 storage and in-band switches'),
   L('dgx-superpod', 'mission-control', 'composes', 'Mission Control runs the cluster'),
@@ -321,7 +362,7 @@ export const NVIDIA = {
   nodes: NVIDIA_NODES,
   links: NVIDIA_LINKS,
   linkTypes: LINK_TYPES,
-  cases: [],
+  cases: NVIDIA_USE_CASES,
   details: NVIDIA_DETAILS,
   primitiveDetails: NVIDIA_PRIMITIVE_DETAILS,
 };

@@ -85,7 +85,7 @@ test('a wider design meets more of the cluster use case than a narrower one', ()
 
 test('lookups across use cases and designs', () => {
   assert.ok(caseProducts('enterprise-rag').includes('netapp') && caseProducts('enterprise-rag').includes('pure'));
-  assert.deepEqual(casesNeeding('ai-defense').map((x) => x.role), ['recommended', 'recommended']);
+  assert.deepEqual(casesNeeding('ai-defense').map((x) => `${x.useCase.id}:${x.role}`), ['enterprise-rag:recommended', 'enterprise-ai-cluster:recommended', 'agentic-ai:required', 'secure-private-ai:required']);
   assert.ok(casesNeeding('ucs-fi').some((x) => x.useCase.id === 'enterprise-rag' && x.role === 'required'));
   assert.deepEqual(casesNeeding('thousandeyes'), []);
   assert.deepEqual(casesDelivered('flashstack-rag').map((u) => u.id), ['enterprise-rag']);

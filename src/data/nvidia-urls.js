@@ -68,4 +68,9 @@ export const NV = {
   dsx: 'https://www.nvidia.com/en-us/data-center/products/dsx/',
   agentToolkit: 'https://docs.nvidia.com/nemo/agent-toolkit/latest/index.html',
   aiq: 'https://docs.nvidia.com/aiq-blueprint/latest/index.html',
+  eraRagGuide: 'https://docs.nvidia.com/enterprise-reference-architectures/enterprise-rag-deployment-guide/latest/abstract.html',
+  eraRagOverview: 'https://docs.nvidia.com/enterprise-reference-architectures/enterprise-rag-deployment-guide/latest/enterprise-ra-overview.html',
+  ragBlueprint: 'https://build.nvidia.com/nvidia/build-an-enterprise-rag-pipeline',
+  eraAiQ: 'https://docs.nvidia.com/enterprise-reference-architectures/ai-q-research-agent-blueprint/latest/system-overview-and-architecture.html',
+  eraK8sGuide: 'https://docs.nvidia.com/enterprise-reference-architectures/upstream-kubernetes-enterprise-ra-deployment-guide/latest/overview.html',
 };

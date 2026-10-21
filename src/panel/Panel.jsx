@@ -411,6 +411,7 @@ function UseCasePanel({ id, designId }) {
         <p className="lede small">The required needs come from the design guides below. The recommended ones are suggestions, not part of those designs.</p>
       )}
       <p className="src"><a href={uc.url} target="_blank" rel="noreferrer">Source</a></p>
+      {uc.caveat && <p className="caveat"><b>Check:</b> {uc.caveat}</p>}
 
       {sum && (
         <section className="verdict" aria-live="polite">
