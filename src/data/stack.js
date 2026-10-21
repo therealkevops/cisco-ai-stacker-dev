@@ -48,9 +48,11 @@ export const NODES = [
   { id: 'ai-pod', name: 'Cisco AI PODs', kind: 'design', vendor: 'cisco', status: 'sourced', url: SOURCES.pods,
     blurb: 'Pre-validated building blocks of Nexus 9000 switching, UCS compute and Intersight management. Managed on premises through Nexus Dashboard, or cloud-managed through Nexus Hyperfabric.' },
   { id: 'pod-2-8-9-400', name: 'AI POD 2-8-9-400', kind: 'design', vendor: 'cisco', status: 'sourced', url: SOURCES.pod2894,
-    blurb: 'Enterprise design on UCS C885A servers and Nexus 9364E-SG2 switches, compliant with the NVIDIA Enterprise Reference Architecture.' },
+    blurb: 'Enterprise design on UCS C885A servers and Nexus 9364E-SG2 switches, compliant with the NVIDIA Enterprise Reference Architecture.',
+    related: [{ lens: 'nvidia', id: 'era-hgx-h200', relation: 'Built to an NVIDIA reference architecture', note: 'NVIDIA lists this design among its partner-endorsed designs, as the Cisco AI POD for the 2-8-9-400 RA: UCS C885A M8 with HGX H200, 4 to 16 nodes.' }] },
   { id: 'pod-2-8-5-200', name: 'AI POD 2-8-5-200', kind: 'design', vendor: 'cisco', status: 'sourced', url: SOURCES.pod285,
-    blurb: 'Cisco AI POD built to NVIDIA\'s PCIe-optimised 2-8-5-200 Enterprise Reference Architecture: UCS C845A M8 servers with RTX PRO 6000 Blackwell Server Edition or H200 NVL GPUs, from 4 to 32 nodes, on Nexus 9000 back-end and front-end fabrics.' },
+    blurb: 'Cisco AI POD built to NVIDIA\'s PCIe-optimised 2-8-5-200 Enterprise Reference Architecture: UCS C845A M8 servers with RTX PRO 6000 Blackwell Server Edition or H200 NVL GPUs, from 4 to 32 nodes, on Nexus 9000 back-end and front-end fabrics.',
+    related: [{ lens: 'nvidia', id: 'era-rtx-pro', relation: 'Built to an NVIDIA reference architecture', note: 'NVIDIA lists this design among its partner-endorsed designs, as the Cisco 2-8-5-200 RA: UCS C845A M8 with RTX PRO 6000 Blackwell Server Edition or H200 NVL, 4 to 32 nodes.' }] },
 
   { id: 'flexpod-rag', name: 'FlexPod RAG with NVIDIA NIM', kind: 'design', vendor: 'cisco', status: 'sourced', url: SOURCES.flexpodRag,
     blurb: 'Cisco Validated Design for a retrieval-augmented generation pipeline on FlexPod Datacenter, built on NVIDIA NIM microservices and integrated with a Webex chat bot.',

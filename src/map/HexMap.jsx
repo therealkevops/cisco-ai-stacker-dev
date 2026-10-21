@@ -207,7 +207,7 @@ export default function HexMap({ model, route, hoverId }) {
         })}
       </g>
     </svg>
-    {view.links.length > 0 && <LineKey styles={stylesPresent(view.links)} />}
+    {view.links.length > 0 && <LineKey styles={stylesPresent(view.links)} corner={model.data.keyCorner} />}
     </>
   );
 }

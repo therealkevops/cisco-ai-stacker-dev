@@ -237,3 +237,10 @@ a { color: inherit; }
 .lens a { padding: 5px 12px; border: 1px solid var(--rule); border-radius: 999px; font-size: 13px; font-weight: 500; color: var(--ink); text-decoration: none; }
 .lens a:hover { border-color: var(--ink); }
 .lens a[aria-current='true'] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.list.stack li { display: block; }
+.list.stack li .sub { display: block; margin-top: 2px; }
+.line-key.top-left { right: auto; left: 18px; }
+.line-key.bottom-right { top: auto; bottom: 16px; }
+.line-key.bottom-left { top: auto; bottom: 16px; right: auto; left: 18px; }
+/* With many line styles in view the key drops the explanatory sub-lines to stay clear of the hexagons; the panel's key keeps them. */
+.line-key.dense li i { display: none; }

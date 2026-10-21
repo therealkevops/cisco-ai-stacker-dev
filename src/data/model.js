@@ -53,6 +53,8 @@ const nodeById = new Map(NODES.map((n) => [n.id, n]));
   
   // Everything a validated design includes: follow "contains" links downward from it, so the Secure AI
   // Factory brings in the AI PODs and, through them, the servers, switches and GPUs.
+  // A link marked `shallow` brings in its target but not what the target contains: a design that
+  // includes a software suite has not necessarily used every part of it.
   function membersOf(designId) {
     const found = new Set();
     const queue = [designId];
@@ -61,7 +63,7 @@ const nodeById = new Map(NODES.map((n) => [n.id, n]));
       for (const l of LINKS) {
         if (l.type === 'composes' && l.a === id && !found.has(l.b)) {
           found.add(l.b);
-          queue.push(l.b);
+          if (!l.shallow) queue.push(l.b);
         }
       }
     }

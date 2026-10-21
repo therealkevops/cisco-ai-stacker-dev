@@ -64,13 +64,13 @@ function Overview() {
       <h1>Primitives, mapped to the portfolio</h1>
       <p className="lede">
         At the centre is the AI workload. Around it are the six primitives it needs, and beside each sit the products that provide it:
-        {data.name} first, partners further out. {nodes.filter((n) => !n.kind).length} products, {links.length} integrations.
+        {' '}{data.name} first, partners further out. {nodes.filter((n) => !n.kind).length} products, {links.length} integrations.
       </p>
       <ul className="how">
         <li><b>Pick a product</b> to draw its integrations.</li>
         <li><b>Pick a primitive</b> to see everything that provides it.</li>
         <li><b>Pick a design</b> to see which primitives it covers, and which it leaves open.</li>
-        <li><b>Pick a use case</b> to see what a customer scenario needs, then check it against a design.</li>
+        {cases.length > 0 && <li><b>Pick a use case</b> to see what a customer scenario needs, then check it against a design.</li>}
       </ul>
       {cases.length > 0 && (
       <section aria-labelledby="uc-h">
@@ -286,6 +286,21 @@ function DesignPanel({ id }) {
         </section>
       )}
 
+      {design.related?.length > 0 && (
+        <section aria-labelledby="rel-h">
+          <h2 id="rel-h" className="label">In the other lens</h2>
+          <ul className="list stack">
+            {design.related.map((r) => (
+              <li key={r.lens + r.id}>
+                <a href={MODELS[r.lens].href.design(r.id)}>{MODELS[r.lens].nodeById.get(r.id).name}</a>
+                <span className="sub">{r.relation}</span>
+              </li>
+            ))}
+          </ul>
+          {design.related.map((r) => <p key={r.id} className="fineprint">{r.note}</p>)}
+        </section>
+      )}
+
       <section>
         <h2 className="label">Covers {covered.length} of {rows.length} primitives</h2>
         <ul className="cover">
@@ -306,6 +321,7 @@ function DesignPanel({ id }) {
         )}
       </section>
 
+      {cases.length > 0 && (
       <section aria-labelledby="duc-h">
         <h2 id="duc-h" className="label">Use cases</h2>
         <ul className="list">
@@ -320,6 +336,7 @@ function DesignPanel({ id }) {
           })}
         </ul>
       </section>
+      )}
 
       <section>
         <h2 className="label">{members.length} products included</h2>

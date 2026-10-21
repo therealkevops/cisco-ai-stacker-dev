@@ -20,9 +20,9 @@ export function LineSample({ style, width = 54 }) {
 export const LineSampleFor = ({ type }) => <LineSample style={styleOf(type)} />;
 
 // The key shown on the map whenever lines are drawn: only the styles in view, each with its meaning.
-export default function LineKey({ styles }) {
+export default function LineKey({ styles, corner }) {
   return (
-    <aside className="line-key" aria-label="What the lines mean">
+    <aside className={'line-key' + (corner ? ' ' + corner : '') + (styles.length > 3 ? ' dense' : '')} aria-label="What the lines mean">
       <p className="lk-title">Lines</p>
       <ul>
         {styles.map((s) => (
