@@ -1,41 +1,47 @@
-# The Cisco AI Stack
+# The Cisco AI Stack: primitives mapped to the portfolio
 
-A clickable diagram of the Cisco AI stack: what each layer is, which products and partners sit in it, and how they integrate.
+A honeycomb map of the Cisco AI stack, in the manner of an ecosystem map. At the centre is the AI workload. Around it are the six primitives it needs, and beside each primitive sit the products that provide it: Cisco first, then partners, each primitive in its own colour.
+
+| Primitive | Examples |
+|---|---|
+| Platform and runtime | NVIDIA AI Enterprise, OpenShift, Kubernetes, Isovalent |
+| Operations and agents | Splunk Observability, AI Canvas, ThousandEyes, AGNTCY |
+| Security | AI Defense, Hybrid Mesh Firewall, Isovalent Runtime Security, Splunk ES, XDR |
+| Network fabric | Nexus 9364E-SG2, Nexus 9000, Hyperfabric AI, Nexus Dashboard |
+| Compute and accelerators | UCS C885A M8, C845A M8, Intersight, NVIDIA HGX GPUs, BlueField |
+| Data and storage | NetApp, Pure Storage, VAST Data, Hitachi Vantara, Nutanix |
 
 ## Using it
 
-**The stack** is the home page. Validated designs frame the whole picture, five layers run top to bottom (platform, data, network, compute, silicon), and security and operations run alongside all of them.
+- **Pick a product** to light up what it connects to: the hexes it integrates with are outlined, and arrowed lines run the way each relationship does. The panel lists the connections in words, and which validated designs include the product.
+- **Pick a primitive** to light up everything that provides it, and see which other primitives it integrates with most.
+- **Pick a validated design** (Secure AI Factory, AI PODs, the 2-8-9-400 and 2-8-5-200 designs) for the portfolio lens. The products the design includes light up, each primitive shows how many of its products are covered ("2 of 6"), and the panel names the primitives the design leaves open.
 
-- **Pick a product** and everything unrelated fades. Curved lines with arrowheads run from it to everything it connects to, wherever that sits in the stack. Line style tells the relationship apart (solid-ringed for "contains", dashed for "carries traffic", dash-dot for "secures", and so on). A tray at the foot of the screen lists the connections in words; hover one to see the line and what the integration is, click it to move across.
-- **Follow a journey** for a guided path through the stack, one step at a time: *Build an AI cluster*, *Secure it* and *Operate it*. Each step lights up its products and the lines between them, with a short explanation. Use Back and Next, the arrow keys or the numbered buttons; Escape leaves.
-- **Open a layer** (click its name) for its products and everything that leaves the layer, grouped by the layer it reaches.
-- **Open a product page** for its integrations written from its own point of view ("Contains", "Is part of", "Manages", "Is managed by"…), with a link to its source.
-
-Filled dots are Cisco, open dots are partners, and a dashed outline means the entry is not yet confirmed against a public page. Every view has its own URL (`#/pick/n9364e`, `#/journey/secure/2`, `#/layer/network`, `#/node/ai-defense`), so the back button works and any view can be shared.
-
-On a phone the lines are hidden, because they would be too cramped; the same connections are listed in the tray.
+Filled hexes are Cisco, open hexes are partners, and a dashed outline means the entry is not yet confirmed against a public page. Every selection has its own URL (`#/product/n9364e`, `#/primitive/security`, `#/design/ai-pod`), so the back button works and any view can be shared. Escape clears the selection, and every hex is reachable with the keyboard.
 
 ## Running it
 
 ```
 npm install
 npm run dev      # http://localhost:8999
-npm test         # data integrity, navigation, line routing and journeys
+npm test         # data integrity, honeycomb layout and portfolio coverage
 npm run lint
 npm run build    # static files in dist/, ready for Vercel or any static host
 ```
 
 ## Where the content lives
 
-- [`src/data/stack.js`](src/data/stack.js): the layers, the products and the integrations, each with a `status` of `sourced` or `check` and a source URL. Integrations are directional (a to b), so "Nexus 9000 contains Nexus 9364E-SG2" reads correctly from both ends. To add a product, add an entry to `NODES` and at least one `L(...)` line to `LINKS`.
-- [`src/data/journeys.js`](src/data/journeys.js): the guided journeys. Each step names the products it lights up and the sentences shown with it.
+[`src/data/stack.js`](src/data/stack.js) holds everything: the six primitives, the products and designs, and the integrations between them, each with a `status` of `sourced` or `check` and a source URL. Integrations are directional (a to b), so "Nexus 9000 contains Nexus 9364E-SG2" reads correctly from both ends.
 
-The tests fail if a link points at a product that does not exist, a product has no source, an integration reads the same from both ends, a journey step names a missing product or lights up something with no connection, or a step involves an unverified entry without saying so.
+- To add a product, add an entry to `NODES` with its `primitive`, and at least one `L(...)` line to `LINKS`. A primitive's wedge holds up to nine products.
+- To add a validated design, add a node with `kind: 'design'` and "contains" links to what it includes. Coverage follows the containment links downward, so a design that contains another design includes everything inside it.
+
+The tests fail if a link points at a product that does not exist, a product has no source, an integration reads the same from both ends, a primitive's products do not form one connected clump on the map, or a label is too long for its hexagon.
 
 ### Accuracy
 
-Cisco renames and repackages products often, and some details in the public sources disagree (for example which ASIC is in the Nexus 9364E-SG2). Anything not confirmed is marked `check` and shows as unverified, and journey steps say so in their text. Re-check before using this in front of a customer.
+Cisco renames and repackages products often, and some details in the public sources disagree (for example which ASIC is in the Nexus 9364E-SG2). Anything not confirmed is marked `check` and shows as unverified. Re-check before using this in front of a customer. Which primitive a product belongs to, and the order of the hexes, are editorial choices, not Cisco's.
 
 ## How it is built
 
-React and Vite, no other runtime dependencies. Routing is the URL hash. The lines are SVG paths computed by [`src/views/geometry.js`](src/views/geometry.js), a pure module that picks the sides of each chip to leave and arrive by and spreads lines that share a side so they do not stack. The whole site is static files, so it runs on any static host, including the free tiers.
+React and Vite, with no other runtime dependencies. The map is a single SVG. Its layout, in [`src/map/hexgrid.js`](src/map/hexgrid.js), is pure geometry on a hexagonal grid and is tested without a browser. It is static files, so it runs on any static host, including the free tiers.

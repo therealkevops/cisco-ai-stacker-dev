@@ -1,17 +1,13 @@
-// Lookups over the stack data, shared by the views and the tests.
-import { LAYERS, NODES, LINKS, LINK_TYPES } from './stack.js';
-import { JOURNEYS } from './journeys.js';
+// Lookups and derived facts over the stack data, shared by the map, the panel and the tests.
+import { PRIMITIVES, NODES, LINKS, LINK_TYPES } from './stack.js';
 
 export const nodeById = new Map(NODES.map((n) => [n.id, n]));
-export const layerById = new Map(LAYERS.map((l) => [l.id, l]));
+export const primitiveById = new Map(PRIMITIVES.map((p) => [p.id, p]));
 export const typeById = new Map(LINK_TYPES.map((t) => [t.id, t]));
-export const journeyById = new Map(JOURNEYS.map((j) => [j.id, j]));
 
-export const frameLayer = LAYERS.find((l) => l.group === 'frame');
-export const stackLayers = LAYERS.filter((l) => l.group === 'stack');
-export const crossLayers = LAYERS.filter((l) => l.group === 'cross');
-
-export const nodesIn = (layerId) => NODES.filter((n) => n.layer === layerId);
+export const products = NODES.filter((n) => n.kind !== 'design');
+export const designs = NODES.filter((n) => n.kind === 'design');
+export const productsIn = (primitiveId) => products.filter((n) => n.primitive === primitiveId);
 
 // How a link reads from one end: "Contains" from the container, "Is part of" from the part.
 export const phrase = (link, subjectId) => {
@@ -28,47 +24,82 @@ export function linksOf(nodeId) {
   }));
 }
 
-// Integrations that leave a layer, grouped by the layer they reach. Each entry keeps the end that
-// is inside this layer (`from`) and the end that is outside it (`to`).
-export function layerConnections(layerId) {
-  const groups = new Map();
-  for (const l of LINKS) {
-    const a = nodeById.get(l.a);
-    const b = nodeById.get(l.b);
-    if ((a.layer === layerId) === (b.layer === layerId)) continue;
-    const [from, to] = a.layer === layerId ? [a, b] : [b, a];
-    if (!groups.has(to.layer)) groups.set(to.layer, []);
-    groups.get(to.layer).push({ from, to, type: l.type, phrase: phrase(l, from.id), label: l.label, status: l.status });
+// Integrations between two products, which are the ones the map can draw (designs have no hex).
+export const productLinks = LINKS.filter((l) => !nodeById.get(l.a).kind && !nodeById.get(l.b).kind);
+export const linksBetweenProducts = (nodeId) => productLinks.filter((l) => l.a === nodeId || l.b === nodeId);
+
+// Everything a validated design includes: follow "contains" links downward from it, so the Secure AI
+// Factory brings in the AI PODs and, through them, the servers, switches and GPUs.
+export function membersOf(designId) {
+  const found = new Set();
+  const queue = [designId];
+  while (queue.length) {
+    const id = queue.shift();
+    for (const l of LINKS) {
+      if (l.type === 'composes' && l.a === id && !found.has(l.b)) {
+        found.add(l.b);
+        queue.push(l.b);
+      }
+    }
   }
-  return LAYERS.filter((x) => groups.has(x.id)).map((x) => ({ layer: x, items: groups.get(x.id) }));
+  return found;
 }
 
-// Links to draw when one product is picked: everything that touches it.
-export const edgesOf = (nodeId) => LINKS.filter((l) => l.a === nodeId || l.b === nodeId);
+// For a design: how many of each primitive's products it includes. This is the portfolio-against-
+// primitives view, and the gaps are the primitives where `have` is 0.
+export function coverage(designId) {
+  const members = membersOf(designId);
+  return PRIMITIVES.map((p) => {
+    const all = productsIn(p.id);
+    return { primitive: p, have: all.filter((n) => members.has(n.id)).length, total: all.length };
+  });
+}
 
-// Links to draw for a journey step: those joining two of the step's products.
-export const edgesAmong = (ids) => {
-  const set = new Set(ids);
-  return LINKS.filter((l) => set.has(l.a) && set.has(l.b));
+// Which designs include a product.
+export const designsIncluding = (productId) => designs.filter((d) => membersOf(d.id).has(productId));
+
+// How many integrations join each pair of primitives, from one primitive's point of view.
+export function primitiveLinks(primitiveId) {
+  const counts = new Map();
+  for (const l of productLinks) {
+    const a = nodeById.get(l.a).primitive;
+    const b = nodeById.get(l.b).primitive;
+    if (a === b || (a !== primitiveId && b !== primitiveId)) continue;
+    const other = a === primitiveId ? b : a;
+    counts.set(other, (counts.get(other) || 0) + 1);
+  }
+  return PRIMITIVES.filter((p) => counts.has(p.id))
+    .map((p) => ({ primitive: p, count: counts.get(p.id) }))
+    .sort((x, y) => y.count - x.count);
+}
+
+// The address bar drives what is selected: '#/' nothing, '#/product/<id>', '#/design/<id>' (the
+// portfolio lens), or '#/primitive/<id>'.
+export function parseRoute(hash) {
+  const [, kind, id] = hash.replace(/^#/, '').split('/');
+  if (kind === 'product' && nodeById.has(id) && !nodeById.get(id).kind) return { kind: 'product', id };
+  if (kind === 'design' && nodeById.has(id) && nodeById.get(id).kind === 'design') return { kind: 'design', id };
+  if (kind === 'primitive' && primitiveById.has(id)) return { kind: 'primitive', id };
+  return { kind: null };
+}
+
+export const href = {
+  product: (id) => `#/product/${id}`,
+  design: (id) => `#/design/${id}`,
+  primitive: (id) => `#/primitive/${id}`,
+  home: '#/',
 };
 
-// The address bar drives navigation. On the stack page: '#/' is the plain stack, '#/pick/<product>'
-// lights up one product's connections, '#/journey/<id>/<step>' is a guided step (steps count from 1).
-// '#/layer/<id>' and '#/node/<id>' are the detail pages.
-export function parseRoute(hash) {
-  const [, kind, id, step] = hash.replace(/^#/, '').split('/');
-  if (kind === 'layer' && layerById.has(id)) return { view: 'layer', id };
-  if (kind === 'node' && nodeById.has(id)) return { view: 'node', id };
-  if (kind === 'pick' && nodeById.has(id)) return { view: 'stack', pick: id };
-  if (kind === 'journey' && journeyById.has(id)) {
-    const last = journeyById.get(id).steps.length;
-    const n = Math.min(last, Math.max(1, parseInt(step, 10) || 1));
-    return { view: 'stack', journey: { id, step: n } };
-  }
-  return { view: 'stack' };
+// Products in each primitive, most connected first (Cisco ahead of partners on a tie), which is the
+// order they are placed on the map: the busiest sits right next to its primitive.
+export function layoutOrder() {
+  const degree = (id) => LINKS.filter((l) => l.a === id || l.b === id).length;
+  return new Map(
+    PRIMITIVES.map((p) => [
+      p.id,
+      productsIn(p.id)
+        .sort((x, y) => degree(y.id) - degree(x.id) || (x.vendor === 'cisco' ? -1 : 1) - (y.vendor === 'cisco' ? -1 : 1))
+        .map((n) => n.id),
+    ]),
+  );
 }
-
-export const hrefLayer = (id) => `#/layer/${id}`;
-export const hrefNode = (id) => `#/node/${id}`;
-export const hrefPick = (id) => `#/pick/${id}`;
-export const hrefJourney = (id, step = 1) => `#/journey/${id}/${step}`;

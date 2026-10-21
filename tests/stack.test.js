@@ -1,39 +1,44 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { LAYERS, NODES, LINKS, LINK_TYPES, SOURCES } from '../src/data/stack.js';
+import { PRIMITIVES, NODES, LINKS, LINK_TYPES, SOURCES } from '../src/data/stack.js';
 
 const ids = new Set(NODES.map((n) => n.id));
-const layerIds = new Set(LAYERS.map((l) => l.id));
 const typeIds = new Set(LINK_TYPES.map((t) => t.id));
+const primitiveIds = new Set(PRIMITIVES.map((p) => p.id));
+const isDesign = (n) => n.kind === 'design';
 
 test('node ids are unique', () => {
   assert.equal(ids.size, NODES.length);
 });
 
-test('every node sits in a known layer, with a valid vendor, mass and status', () => {
+test('every product sits in exactly one known primitive; designs sit in none', () => {
   for (const n of NODES) {
-    assert.ok(layerIds.has(n.layer), `${n.id}: unknown layer ${n.layer}`);
+    if (isDesign(n)) assert.equal(n.primitive, undefined, `${n.id}: a design has no primitive`);
+    else assert.ok(primitiveIds.has(n.primitive), `${n.id}: unknown primitive ${n.primitive}`);
     assert.ok(['cisco', 'partner'].includes(n.vendor), `${n.id}: vendor`);
     assert.ok(['sourced', 'check'].includes(n.status), `${n.id}: status`);
     assert.ok(n.blurb.length > 20, `${n.id}: blurb`);
+    if (n.short) assert.ok(n.short.length < n.name.length, `${n.id}: short should be shorter`);
   }
 });
 
-test('every node cites a URL from the SOURCES list', () => {
+test('every product cites a URL from the SOURCES list', () => {
   const urls = new Set(Object.values(SOURCES));
   for (const n of NODES) assert.ok(urls.has(n.url), `${n.id}: url not in SOURCES`);
 });
 
-test('every layer is populated, with one frame and a sensible layout', () => {
-  for (const l of LAYERS) {
-    assert.ok(NODES.some((n) => n.layer === l.id), `${l.id} is empty`);
-    assert.ok(['frame', 'stack', 'cross'].includes(l.group), `${l.id}: group`);
-    assert.ok(l.summary.length > 20, `${l.id}: summary`);
-    assert.ok(l.tagline && l.tagline.length < 40, `${l.id}: tagline`);
+test('there are six primitives, each in its own sector, each with products that fit its wedge', () => {
+  assert.equal(PRIMITIVES.length, 6);
+  assert.equal(new Set(PRIMITIVES.map((p) => p.sector)).size, 6);
+  for (const p of PRIMITIVES) {
+    assert.ok(p.summary.length > 20 && p.label.length < p.name.length + 1, p.id);
+    const count = NODES.filter((n) => n.primitive === p.id).length;
+    assert.ok(count >= 1 && count <= 9, `${p.id}: ${count} products do not fit the three outer rings of a wedge`);
   }
-  assert.equal(LAYERS.filter((l) => l.group === 'frame').length, 1);
-  assert.ok(LAYERS.filter((l) => l.group === 'stack').length >= 3);
-  assert.equal(new Set(LAYERS.map((l) => l.id)).size, LAYERS.length);
+});
+
+test('there is at least one validated design to use as a portfolio lens', () => {
+  assert.ok(NODES.filter(isDesign).length >= 2);
 });
 
 test('links join known nodes with a known type, no self loops, no duplicates', () => {
@@ -47,6 +52,10 @@ test('links join known nodes with a known type, no self loops, no duplicates', (
     assert.ok(!seen.has(key), `duplicate link ${key}`);
     seen.add(key);
   }
+});
+
+test('every link type has wording for both ends', () => {
+  for (const t of LINK_TYPES) assert.ok(t.name && t.from && t.to && t.from !== t.to, t.id);
 });
 
 test('no node is orphaned, and the graph is one connected piece', () => {

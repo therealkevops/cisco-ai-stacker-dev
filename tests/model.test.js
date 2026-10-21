@@ -1,54 +1,88 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { NODES, LINKS, LINK_TYPES } from '../src/data/stack.js';
-import { parseRoute, linksOf, layerConnections, nodesIn, stackLayers, crossLayers, frameLayer } from '../src/data/model.js';
+import { LINKS, PRIMITIVES } from '../src/data/stack.js';
+import {
+  parseRoute, linksOf, membersOf, coverage, designs, products, productsIn, productLinks, primitiveLinks,
+  designsIncluding, nodeById, layoutOrder,
+} from '../src/data/model.js';
 
-test('routes parse from the hash, and unknown ones fall back to the stack', () => {
-  assert.deepEqual(parseRoute(''), { view: 'stack' });
-  assert.deepEqual(parseRoute('#/'), { view: 'stack' });
-  assert.deepEqual(parseRoute('#/layer/network'), { view: 'layer', id: 'network' });
-  assert.deepEqual(parseRoute('#/node/ai-defense'), { view: 'node', id: 'ai-defense' });
-  assert.deepEqual(parseRoute('#/node/nope'), { view: 'stack' });
-  assert.deepEqual(parseRoute('#/layer/nope'), { view: 'stack' });
-  assert.deepEqual(parseRoute('#/garbage'), { view: 'stack' });
+test('routes parse from the hash, and unknown or mismatched ones fall back to nothing selected', () => {
+  assert.deepEqual(parseRoute(''), { kind: null });
+  assert.deepEqual(parseRoute('#/'), { kind: null });
+  assert.deepEqual(parseRoute('#/product/ai-defense'), { kind: 'product', id: 'ai-defense' });
+  assert.deepEqual(parseRoute('#/design/ai-pod'), { kind: 'design', id: 'ai-pod' });
+  assert.deepEqual(parseRoute('#/primitive/network'), { kind: 'primitive', id: 'network' });
+  assert.deepEqual(parseRoute('#/product/ai-pod'), { kind: null }, 'a design is not a product');
+  assert.deepEqual(parseRoute('#/design/ai-defense'), { kind: null }, 'a product is not a design');
+  assert.deepEqual(parseRoute('#/product/nope'), { kind: null });
+  assert.deepEqual(parseRoute('#/primitive/nope'), { kind: null });
+  assert.deepEqual(parseRoute('#/garbage'), { kind: null });
 });
 
-test('the three groups cover every layer and every node is reachable from the stack page', () => {
-  const shown = new Set([frameLayer, ...stackLayers, ...crossLayers].map((l) => l.id));
-  for (const n of NODES) assert.ok(shown.has(n.layer), `${n.id} sits in a layer the stack page does not show`);
-});
-
-test('linksOf returns each integration from both ends', () => {
-  for (const l of LINKS) {
-    assert.ok(linksOf(l.a).some((x) => x.other.id === l.b), `${l.a} does not list ${l.b}`);
-    assert.ok(linksOf(l.b).some((x) => x.other.id === l.a), `${l.b} does not list ${l.a}`);
-  }
-});
-
-test('layer connections only list integrations that leave the layer', () => {
-  for (const layer of [frameLayer, ...stackLayers, ...crossLayers]) {
-    for (const { layer: other, items } of layerConnections(layer.id)) {
-      assert.notEqual(other.id, layer.id);
-      for (const it of items) {
-        assert.equal(it.from.layer, layer.id);
-        assert.equal(it.to.layer, other.id);
-      }
-    }
-  }
-});
-
-test('every layer has at least one product to open', () => {
-  for (const l of [frameLayer, ...stackLayers, ...crossLayers]) assert.ok(nodesIn(l.id).length > 0);
-});
-
-test('every integration reads sensibly from both ends', () => {
+test('linksOf returns each integration from both ends, reading differently from each', () => {
   for (const l of LINKS) {
     const fromA = linksOf(l.a).find((x) => x.other.id === l.b && x.type === l.type);
     const fromB = linksOf(l.b).find((x) => x.other.id === l.a && x.type === l.type);
+    assert.ok(fromA && fromB, `${l.a} / ${l.b}`);
     assert.notEqual(fromA.phrase, fromB.phrase, `${l.a} / ${l.b}: both ends read the same`);
   }
 });
 
-test('every link type has wording for both ends', () => {
-  for (const t of LINK_TYPES) assert.ok(t.name && t.from && t.to && t.from !== t.to, t.id);
+test('a design brings in what it contains, all the way down', () => {
+  const factory = membersOf('secure-ai-factory');
+  assert.ok(factory.has('ai-pod') && factory.has('pod-2-8-9-400') && factory.has('c885a') && factory.has('nvidia-gpu'));
+  assert.ok(factory.has('ai-defense') && factory.has('secure-firewall'), 'a firewall inside the hybrid mesh');
+  assert.ok(!factory.has('secure-ai-factory'), 'not itself');
+});
+
+test('containment only goes downward: a part does not pull in what contains it', () => {
+  const pod = membersOf('pod-2-8-9-400');
+  assert.ok(pod.has('n9364e'));
+  assert.ok(!pod.has('nexus-9000'), 'the 9364E-SG2 is a Nexus 9000 model, but the POD does not include the whole family');
+  assert.ok(!pod.has('spectrum-x'));
+  assert.ok(!pod.has('ai-pod'));
+});
+
+test('coverage counts every primitive, and never exceeds what the primitive offers', () => {
+  for (const d of designs) {
+    const rows = coverage(d.id);
+    assert.equal(rows.length, PRIMITIVES.length);
+    for (const row of rows) {
+      assert.equal(row.total, productsIn(row.primitive.id).length);
+      assert.ok(row.have >= 0 && row.have <= row.total);
+    }
+  }
+});
+
+test('a single AI POD design leaves gaps, which is the point of the lens', () => {
+  const rows = new Map(coverage('pod-2-8-9-400').map((r) => [r.primitive.id, r]));
+  assert.ok(rows.get('compute').have > 0 && rows.get('network').have > 0);
+  assert.equal(rows.get('security').have, 0);
+  assert.equal(rows.get('ops').have, 0);
+  const factory = new Map(coverage('secure-ai-factory').map((r) => [r.primitive.id, r]));
+  assert.ok(factory.get('security').have > 0, 'the factory adds security');
+});
+
+test('designsIncluding finds the designs that contain a product', () => {
+  const names = designsIncluding('c885a').map((d) => d.id);
+  assert.ok(names.includes('pod-2-8-9-400') && names.includes('ai-pod') && names.includes('secure-ai-factory'));
+  assert.ok(!names.includes('pod-2-8-5-200'));
+});
+
+test('product links exclude designs, and primitive links count the other primitives it touches', () => {
+  for (const l of productLinks) assert.ok(!nodeById.get(l.a).kind && !nodeById.get(l.b).kind);
+  for (const p of PRIMITIVES) {
+    const rows = primitiveLinks(p.id);
+    assert.ok(rows.every((r) => r.primitive.id !== p.id && r.count > 0));
+    for (let i = 1; i < rows.length; i++) assert.ok(rows[i - 1].count >= rows[i].count, 'sorted by count');
+  }
+});
+
+test('layout order lists each primitive\'s products once, busiest first', () => {
+  const order = layoutOrder();
+  const all = [...order.values()].flat();
+  assert.equal(all.length, products.length);
+  assert.equal(new Set(all).size, all.length);
+  const degree = (id) => LINKS.filter((l) => l.a === id || l.b === id).length;
+  for (const ids of order.values()) for (let i = 1; i < ids.length; i++) assert.ok(degree(ids[i - 1]) >= degree(ids[i]));
 });

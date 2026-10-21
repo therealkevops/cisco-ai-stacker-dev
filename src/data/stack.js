@@ -16,116 +16,112 @@ export const SOURCES = {
   foundation: 'https://www.sdxcentral.com/news/cisco-demos-practical-agentic-ai-for-soc-automation/',
 };
 
-// How the stack is drawn. `group` places a layer: 'frame' wraps everything (the validated
-// designs), 'stack' is a band in the vertical stack (top is closest to the workload, bottom is
-// silicon), and 'cross' runs alongside every band. Order within a group is top to bottom.
-export const LAYERS = [
-  { id: 'design', group: 'frame', name: 'Validated designs', tagline: 'Pre-tested bundles',
-    summary: 'Pre-tested combinations of the layers below, sold as complete stacks or as individual parts.' },
-  { id: 'platform', group: 'stack', name: 'Platform', tagline: 'Where models and agents run',
+// The primitives: what an AI workload needs, each delivered by a set of products. `sector` is which
+// of the six directions around the centre of the map it sits in (0 east, then clockwise).
+export const PRIMITIVES = [
+  { id: 'platform', name: 'Platform and runtime', label: 'Platform', sector: 4,
     summary: 'Kubernetes, the GPU software stack and cluster networking that models and agents run on.' },
-  { id: 'data', group: 'stack', name: 'Data and storage', tagline: 'Validated storage partners',
-    summary: 'Storage partners validated with the stack for datasets and model data.' },
-  { id: 'network', group: 'stack', name: 'Network fabric', tagline: 'Lossless Ethernet for GPUs',
-    summary: 'Lossless Ethernet for GPU-to-GPU traffic and the front-end network, with the controllers that manage it.' },
-  { id: 'compute', group: 'stack', name: 'Compute', tagline: 'GPU servers and their management',
-    summary: 'GPU servers and the management plane that provisions and monitors them.' },
-  { id: 'silicon', group: 'stack', name: 'Silicon and accelerators', tagline: 'What everything is built on',
-    summary: 'The switch silicon, GPUs and DPUs that everything above is built on.' },
-  { id: 'security', group: 'cross', name: 'Security', tagline: 'Protects the whole stack',
-    summary: 'Protects models, agents, workloads and the network, from runtime enforcement to the SOC.' },
-  { id: 'ops', group: 'cross', name: 'Operations and agents', tagline: 'Observe, automate, connect agents',
+  { id: 'ops', name: 'Operations and agents', label: 'Operations', sector: 5,
     summary: 'Observability, AI-driven operations and the open protocols agents use to find and talk to each other.' },
+  { id: 'security', name: 'Security', label: 'Security', sector: 0,
+    summary: 'Protects models, agents, workloads and the network, from runtime enforcement to the SOC.' },
+  { id: 'network', name: 'Network fabric', label: 'Network', sector: 1,
+    summary: 'Lossless Ethernet for GPU-to-GPU traffic and the front-end network, with the controllers that manage it.' },
+  { id: 'compute', name: 'Compute and accelerators', label: 'Compute', sector: 2,
+    summary: 'GPU servers, the accelerators and DPUs inside them, and the management plane that provisions and monitors them.' },
+  { id: 'data', name: 'Data and storage', label: 'Data', sector: 3,
+    summary: 'Storage partners validated with the stack for datasets and model data.' },
 ];
 
-// vendor: 'cisco' is marked with a filled dot, 'partner' with an open one.
+// kind 'design' is a validated design (a portfolio bundle); every other node is a product that sits in
+// one primitive. vendor: 'cisco' is drawn filled, 'partner' open. `short` is the label used in a hex.
 export const NODES = [
   // Validated designs
-  { id: 'secure-ai-factory', name: 'Secure AI Factory with NVIDIA', layer: 'design', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
+  { id: 'secure-ai-factory', name: 'Secure AI Factory with NVIDIA', kind: 'design', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
     blurb: 'Reference architecture that bundles compute, network, software, storage, security and observability. Sold as pre-validated stacks or as individual parts.' },
-  { id: 'ai-pod', name: 'Cisco AI PODs', layer: 'design', vendor: 'cisco', status: 'sourced', url: SOURCES.pods,
+  { id: 'ai-pod', name: 'Cisco AI PODs', kind: 'design', vendor: 'cisco', status: 'sourced', url: SOURCES.pods,
     blurb: 'Pre-validated building blocks of Nexus 9000 switching, UCS compute and Intersight management. Managed on premises through Nexus Dashboard, or cloud-managed through Nexus Hyperfabric.' },
-  { id: 'pod-2-8-9-400', name: 'AI POD 2-8-9-400', layer: 'design', vendor: 'cisco', status: 'sourced', url: SOURCES.pod2894,
+  { id: 'pod-2-8-9-400', name: 'AI POD 2-8-9-400', kind: 'design', vendor: 'cisco', status: 'sourced', url: SOURCES.pod2894,
     blurb: 'Enterprise design on UCS C885A servers and Nexus 9364E-SG2 switches, compliant with the NVIDIA Enterprise Reference Architecture.' },
-  { id: 'pod-2-8-5-200', name: 'AI POD 2-8-5-200', layer: 'design', vendor: 'cisco', status: 'check', url: SOURCES.pods,
+  { id: 'pod-2-8-5-200', name: 'AI POD 2-8-5-200', kind: 'design', vendor: 'cisco', status: 'check', url: SOURCES.pods,
     blurb: 'Smaller enterprise design built on UCS C845A servers with a 200G back-end.' },
 
   // Silicon and accelerators
-  { id: 'silicon-one', name: 'Silicon One G200', layer: 'silicon', vendor: 'cisco', status: 'check', url: SOURCES.pod2894,
+  { id: 'silicon-one', name: 'Silicon One G200', primitive: 'network', vendor: 'cisco', status: 'check', url: SOURCES.pod2894,
     blurb: 'Cisco\'s own switch silicon. Sources disagree on exactly which ASIC sits in the 9364E-SG2, so confirm before quoting it.' },
-  { id: 'nvidia-gpu', name: 'NVIDIA HGX GPUs', layer: 'silicon', vendor: 'partner', status: 'sourced', url: SOURCES.pod2894,
+  { id: 'nvidia-gpu', name: 'NVIDIA HGX GPUs', primitive: 'compute', vendor: 'partner', status: 'sourced', url: SOURCES.pod2894,
     blurb: 'Eight-GPU HGX baseboards (H200 in the C885A guide). The accelerator everything else in the stack exists to feed.' },
-  { id: 'bluefield', name: 'NVIDIA BlueField DPU', layer: 'silicon', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
+  { id: 'bluefield', name: 'NVIDIA BlueField DPU', primitive: 'compute', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
     blurb: 'Network adapter and DPU. Carries the external links on the C885A and hosts the Hybrid Mesh Firewall enforcement point.' },
-  { id: 'spectrum-x', name: 'NVIDIA Spectrum-X', layer: 'silicon', vendor: 'partner', status: 'sourced', url: SOURCES.pod2894,
+  { id: 'spectrum-x', name: 'NVIDIA Spectrum-X', primitive: 'network', vendor: 'partner', status: 'sourced', url: SOURCES.pod2894,
     blurb: 'NVIDIA\'s Ethernet platform for AI. Cisco switches built on Silicon One participate in it.' },
 
   // Compute
-  { id: 'c885a', name: 'UCS C885A M8', layer: 'compute', vendor: 'cisco', status: 'sourced', url: SOURCES.pod2894,
+  { id: 'c885a', name: 'UCS C885A M8', primitive: 'compute', vendor: 'cisco', status: 'sourced', url: SOURCES.pod2894,
     blurb: 'Eight-GPU HGX server with two AMD EPYC CPUs, up to 3 TB of memory and local NVMe, and BlueField adapters.' },
-  { id: 'c845a', name: 'UCS C845A M8', layer: 'compute', vendor: 'cisco', status: 'check', url: SOURCES.pods,
+  { id: 'c845a', name: 'UCS C845A M8', primitive: 'compute', vendor: 'cisco', status: 'check', url: SOURCES.pods,
     blurb: 'MGX-based GPU server used in the smaller 2-8-5-200 design.' },
-  { id: 'ucs-x', name: 'UCS X-Series', layer: 'compute', vendor: 'cisco', status: 'sourced', url: SOURCES.pods,
+  { id: 'ucs-x', name: 'UCS X-Series', primitive: 'compute', vendor: 'cisco', status: 'sourced', url: SOURCES.pods,
     blurb: 'Modular compute that the AI PODs page lists alongside the rack servers.' },
-  { id: 'intersight', name: 'Intersight', layer: 'compute', vendor: 'cisco', status: 'sourced', url: SOURCES.pods,
+  { id: 'intersight', name: 'Intersight', primitive: 'compute', vendor: 'cisco', status: 'sourced', url: SOURCES.pods,
     blurb: 'SaaS lifecycle and policy management for UCS servers, and the management plane behind the AI PODs.' },
 
   // Network fabric
-  { id: 'n9364e', name: 'Nexus 9364E-SG2', layer: 'network', vendor: 'cisco', status: 'sourced', url: SOURCES.pod2894,
+  { id: 'n9364e', name: 'Nexus 9364E-SG2', primitive: 'network', vendor: 'cisco', status: 'sourced', url: SOURCES.pod2894,
     blurb: '64-port 800G switch. Carries lossless RoCE Ethernet for the back-end GPU fabric and the front-end network for storage and users.' },
-  { id: 'nexus-9000', name: 'Nexus 9000', layer: 'network', vendor: 'cisco', status: 'sourced', url: SOURCES.pods,
+  { id: 'nexus-9000', name: 'Nexus 9000', primitive: 'network', vendor: 'cisco', status: 'sourced', url: SOURCES.pods,
     blurb: 'The data center switching family the AI PODs are built on.' },
-  { id: 'hyperfabric', name: 'Nexus Hyperfabric AI', layer: 'network', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
+  { id: 'hyperfabric', name: 'Nexus Hyperfabric AI', primitive: 'network', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
     blurb: 'Cloud-managed fabric delivered as a service. The cloud-managed alternative for an AI POD.' },
-  { id: 'nexus-dashboard', name: 'Nexus Dashboard', layer: 'network', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
+  { id: 'nexus-dashboard', name: 'Nexus Dashboard', primitive: 'network', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
     blurb: 'On-premises controller and operations console for Nexus fabrics. Manages the on-prem AI POD.' },
 
   // Data and storage
-  { id: 'netapp', name: 'NetApp', layer: 'data', vendor: 'partner', status: 'sourced', url: SOURCES.netapp,
+  { id: 'netapp', name: 'NetApp', primitive: 'data', vendor: 'partner', status: 'sourced', url: SOURCES.netapp,
     blurb: 'Published a validated design for the Cisco AI POD (NVA-1186).' },
-  { id: 'pure', name: 'Pure Storage', layer: 'data', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
+  { id: 'pure', name: 'Pure Storage', primitive: 'data', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
     blurb: 'Storage partner for the Secure AI Factory.' },
-  { id: 'vast', name: 'VAST Data', layer: 'data', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
+  { id: 'vast', name: 'VAST Data', primitive: 'data', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
     blurb: 'Storage partner for the Secure AI Factory.' },
-  { id: 'hitachi', name: 'Hitachi Vantara', layer: 'data', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
+  { id: 'hitachi', name: 'Hitachi Vantara', primitive: 'data', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
     blurb: 'Storage partner for the Secure AI Factory.' },
-  { id: 'nutanix', name: 'Nutanix', layer: 'data', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
+  { id: 'nutanix', name: 'Nutanix', primitive: 'data', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
     blurb: 'Storage partner, and its NKP is one of the supported Kubernetes platforms.' },
 
   // Platform
-  { id: 'nvidia-ai-enterprise', name: 'NVIDIA AI Enterprise', layer: 'platform', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
+  { id: 'nvidia-ai-enterprise', name: 'NVIDIA AI Enterprise', primitive: 'platform', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
     blurb: 'NVIDIA\'s supported software layer: NIM microservices, frameworks and GPU operators.' },
-  { id: 'openshift', name: 'Red Hat OpenShift', layer: 'platform', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
+  { id: 'openshift', name: 'Red Hat OpenShift', primitive: 'platform', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
     blurb: 'Kubernetes option for the stack. Red Hat AI Factory is also supported.' },
-  { id: 'kubernetes', name: 'Kubernetes', layer: 'platform', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
+  { id: 'kubernetes', name: 'Kubernetes', primitive: 'platform', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
     blurb: 'Upstream open-source Kubernetes is a supported option beside OpenShift and Nutanix NKP.' },
-  { id: 'isovalent', name: 'Isovalent', layer: 'platform', vendor: 'cisco', status: 'check', url: SOURCES.factory,
+  { id: 'isovalent', name: 'Isovalent', primitive: 'platform', vendor: 'cisco', status: 'check', url: SOURCES.factory,
     blurb: 'Cilium-based networking and observability for Kubernetes clusters.' },
 
   // Security
-  { id: 'ai-defense', name: 'Cisco AI Defense', layer: 'security', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
+  { id: 'ai-defense', name: 'Cisco AI Defense', primitive: 'security', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
     blurb: 'Secures AI models, agents and applications. Integrated with NVIDIA AI in the Secure AI Factory.' },
-  { id: 'hybrid-mesh-fw', name: 'Hybrid Mesh Firewall', layer: 'security', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
+  { id: 'hybrid-mesh-fw', name: 'Hybrid Mesh Firewall', primitive: 'security', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
     blurb: 'Firewall enforcement that runs on NVIDIA BlueField DPUs, close to the workload.' },
-  { id: 'secure-firewall', name: 'Secure Firewall', layer: 'security', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
+  { id: 'secure-firewall', name: 'Secure Firewall', primitive: 'security', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
     blurb: 'Cisco\'s firewall line, part of the hybrid mesh.' },
-  { id: 'isovalent-runtime', name: 'Isovalent Runtime Security', layer: 'security', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
+  { id: 'isovalent-runtime', name: 'Isovalent Runtime Security', primitive: 'security', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
     blurb: 'Runtime security for the Kubernetes workloads that run models and agents.' },
-  { id: 'splunk-es', name: 'Splunk Enterprise Security', layer: 'security', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
+  { id: 'splunk-es', name: 'Splunk Enterprise Security', primitive: 'security', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
     blurb: 'Threat detection, investigation and response platform.' },
-  { id: 'xdr', name: 'Cisco XDR', layer: 'security', vendor: 'cisco', status: 'sourced', url: SOURCES.foundation,
+  { id: 'xdr', name: 'Cisco XDR', primitive: 'security', vendor: 'cisco', status: 'sourced', url: SOURCES.foundation,
     blurb: 'Extended detection and response. Where the Foundation-sec agent demo ran investigations.' },
-  { id: 'foundation-ai', name: 'Foundation AI (Foundation-sec-8B)', layer: 'security', vendor: 'cisco', status: 'sourced', url: SOURCES.foundation,
+  { id: 'foundation-ai', name: 'Foundation AI (Foundation-sec-8B)', short: 'Foundation AI', primitive: 'security', vendor: 'cisco', status: 'sourced', url: SOURCES.foundation,
     blurb: 'Open-source security model, fine-tuned from Llama 3.1, wrapped in an agent that acts as a virtual SOC analyst.' },
 
   // Operations and agents
-  { id: 'splunk-obs', name: 'Splunk Observability', layer: 'ops', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
+  { id: 'splunk-obs', name: 'Splunk Observability', primitive: 'ops', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
     blurb: 'Visibility into AI infrastructure health and agent performance.' },
-  { id: 'ai-canvas', name: 'AI Canvas (AgenticOps)', layer: 'ops', vendor: 'cisco', status: 'sourced', url: SOURCES.canvas,
+  { id: 'ai-canvas', name: 'AI Canvas (AgenticOps)', short: 'AI Canvas', primitive: 'ops', vendor: 'cisco', status: 'sourced', url: SOURCES.canvas,
     blurb: 'Generative UI for cross-domain IT operations; one of the three pieces of Cisco\'s AgenticOps model.' },
-  { id: 'thousandeyes', name: 'ThousandEyes', layer: 'ops', vendor: 'cisco', status: 'check', url: SOURCES.canvas,
+  { id: 'thousandeyes', name: 'ThousandEyes', primitive: 'ops', vendor: 'cisco', status: 'check', url: SOURCES.canvas,
     blurb: 'Network path and internet visibility, one of the telemetry sources AI Canvas draws on.' },
-  { id: 'agntcy', name: 'AGNTCY', layer: 'ops', vendor: 'cisco', status: 'sourced', url: SOURCES.agntcy,
+  { id: 'agntcy', name: 'AGNTCY', primitive: 'ops', vendor: 'cisco', status: 'sourced', url: SOURCES.agntcy,
     blurb: 'Open Internet of Agents project from Outshift, since donated to the Linux Foundation. Building blocks: identity, discovery, messaging, observability.' },
 ];
 
