@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { parseRoute, nodeById, primitiveById, caseById } from './data/model.js';
+import { parseRoute, MODELS } from './data/model.js';
 import HexMap from './map/HexMap.jsx';
 import Panel from './panel/Panel.jsx';
 
-const TITLE = 'The Cisco AI Stack';
-
 function titleFor(route) {
-  const names = { primitive: primitiveById, usecase: caseById };
-  const name = route.kind ? (names[route.kind] || nodeById).get(route.id).name : null;
-  return name ? `${name} · ${TITLE}` : TITLE;
+  const model = MODELS[route.lens];
+  const names = { primitive: model.primitiveById, usecase: model.caseById };
+  const name = route.kind ? (names[route.kind] || model.nodeById).get(route.id).name : null;
+  return name ? `${name} · ${model.data.title}` : model.data.title;
 }
 
 export default function App() {
@@ -30,18 +29,19 @@ export default function App() {
 
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === 'Escape' && !(e.target instanceof HTMLInputElement)) window.location.hash = '#/';
+      if (e.key === 'Escape' && !(e.target instanceof HTMLInputElement)) window.location.hash = MODELS[parseRoute(window.location.hash).lens].href.home;
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  const model = MODELS[route.lens];
   return (
     <div className="app">
       <main className="map-wrap">
-        <HexMap route={route} hoverId={hoverId} />
+        <HexMap model={model} route={route} hoverId={hoverId} />
       </main>
-      <Panel route={route} onHover={setHoverId} />
+      <Panel model={model} route={route} onHover={setHoverId} />
     </div>
   );
 }

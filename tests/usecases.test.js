@@ -93,11 +93,11 @@ test('lookups across use cases and designs', () => {
 });
 
 test('use case routes parse, with an optional design, and reject bad ones', () => {
-  assert.deepEqual(parseRoute('#/usecase/enterprise-rag'), { kind: 'usecase', id: 'enterprise-rag', design: null });
-  assert.deepEqual(parseRoute('#/usecase/enterprise-rag/flashstack-rag'), { kind: 'usecase', id: 'enterprise-rag', design: 'flashstack-rag' });
-  assert.deepEqual(parseRoute('#/usecase/enterprise-rag/ai-defense'), { kind: 'usecase', id: 'enterprise-rag', design: null }, 'a product is not a design');
-  assert.deepEqual(parseRoute('#/usecase/enterprise-rag/nope'), { kind: 'usecase', id: 'enterprise-rag', design: null });
-  assert.deepEqual(parseRoute('#/usecase/nope'), { kind: null });
+  assert.deepEqual(parseRoute('#/usecase/enterprise-rag'), { lens: 'cisco', kind: 'usecase', id: 'enterprise-rag', design: null });
+  assert.deepEqual(parseRoute('#/usecase/enterprise-rag/flashstack-rag'), { lens: 'cisco', kind: 'usecase', id: 'enterprise-rag', design: 'flashstack-rag' });
+  assert.deepEqual(parseRoute('#/usecase/enterprise-rag/ai-defense'), { lens: 'cisco', kind: 'usecase', id: 'enterprise-rag', design: null }, 'a product is not a design');
+  assert.deepEqual(parseRoute('#/usecase/enterprise-rag/nope'), { lens: 'cisco', kind: 'usecase', id: 'enterprise-rag', design: null });
+  assert.deepEqual(parseRoute('#/usecase/nope'), { lens: 'cisco', kind: null });
   assert.equal(href.usecase('a'), '#/usecase/a');
   assert.equal(href.usecase('a', 'b'), '#/usecase/a/b');
 });

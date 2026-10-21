@@ -7,16 +7,19 @@ import {
 } from '../src/data/model.js';
 
 test('routes parse from the hash, and unknown or mismatched ones fall back to nothing selected', () => {
-  assert.deepEqual(parseRoute(''), { kind: null });
-  assert.deepEqual(parseRoute('#/'), { kind: null });
-  assert.deepEqual(parseRoute('#/product/ai-defense'), { kind: 'product', id: 'ai-defense' });
-  assert.deepEqual(parseRoute('#/design/ai-pod'), { kind: 'design', id: 'ai-pod' });
-  assert.deepEqual(parseRoute('#/primitive/network'), { kind: 'primitive', id: 'network' });
-  assert.deepEqual(parseRoute('#/product/ai-pod'), { kind: null }, 'a design is not a product');
-  assert.deepEqual(parseRoute('#/design/ai-defense'), { kind: null }, 'a product is not a design');
-  assert.deepEqual(parseRoute('#/product/nope'), { kind: null });
-  assert.deepEqual(parseRoute('#/primitive/nope'), { kind: null });
-  assert.deepEqual(parseRoute('#/garbage'), { kind: null });
+  assert.deepEqual(parseRoute(''), { lens: 'cisco', kind: null });
+  assert.deepEqual(parseRoute('#/'), { lens: 'cisco', kind: null });
+  assert.deepEqual(parseRoute('#/product/ai-defense'), { lens: 'cisco', kind: 'product', id: 'ai-defense' });
+  assert.deepEqual(parseRoute('#/design/ai-pod'), { lens: 'cisco', kind: 'design', id: 'ai-pod' });
+  assert.deepEqual(parseRoute('#/primitive/network'), { lens: 'cisco', kind: 'primitive', id: 'network' });
+  assert.deepEqual(parseRoute('#/product/ai-pod'), { lens: 'cisco', kind: null }, 'a design is not a product');
+  assert.deepEqual(parseRoute('#/design/ai-defense'), { lens: 'cisco', kind: null }, 'a product is not a design');
+  assert.deepEqual(parseRoute('#/product/nope'), { lens: 'cisco', kind: null });
+  assert.deepEqual(parseRoute('#/primitive/nope'), { lens: 'cisco', kind: null });
+  assert.deepEqual(parseRoute('#/garbage'), { lens: 'cisco', kind: null });
+  assert.deepEqual(parseRoute('#/nvidia/'), { lens: 'nvidia', kind: null });
+  assert.deepEqual(parseRoute('#/nvidia/product/nope'), { lens: 'nvidia', kind: null });
+  assert.equal(parseRoute('#/nvidia/product/ai-defense').kind, null, 'a Cisco product is not in the NVIDIA lens');
 });
 
 test('linksOf returns each integration from both ends, reading differently from each', () => {

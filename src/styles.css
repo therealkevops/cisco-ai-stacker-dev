@@ -70,7 +70,7 @@ a { color: inherit; }
 .badge { font-family: var(--mono) !important; font-size: 10px; fill: var(--paper); }
 
 .hex.product polygon { stroke: var(--c); stroke-width: 1.8; }
-.hex.product.cisco polygon { fill: color-mix(in srgb, var(--c) 26%, var(--paper)); }
+.hex.product.own polygon { fill: color-mix(in srgb, var(--c) 26%, var(--paper)); }
 .hex.product.partner polygon { fill: var(--paper); stroke-width: 2.2; }
 .hex.product.unverified polygon { stroke-dasharray: 5 3; }
 .product-label { font-size: 11.5px; font-weight: 500; fill: var(--ink); letter-spacing: -0.005em; }
@@ -80,7 +80,7 @@ a { color: inherit; }
 
 /* Selection states. Fills stay opaque so lines passing behind a hex never show through. */
 .hex.lit polygon { stroke: var(--accent); stroke-width: 3; }
-.hex.sel polygon, .hex.product.sel polygon, .hex.product.cisco.sel polygon, .hex.product.partner.sel polygon { fill: var(--accent); stroke: var(--accent); }
+.hex.sel polygon, .hex.product.sel polygon, .hex.product.own.sel polygon, .hex.product.partner.sel polygon { fill: var(--accent); stroke: var(--accent); }
 .hex.sel text { fill: var(--paper); }
 .hex.product.dim polygon { fill: color-mix(in srgb, var(--c) 6%, var(--paper)); stroke: color-mix(in srgb, var(--c) 28%, var(--paper)); }
 .hex.product.dim .product-label { fill: color-mix(in srgb, var(--ink) 36%, var(--paper)); }
@@ -230,3 +230,10 @@ a { color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }
+
+/* Focus switch: which vendor's stack the map is organised around */
+.lens { display: flex; align-items: center; gap: 4px; margin: 0 0 18px; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
+.lens-label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); margin-right: 8px; }
+.lens a { padding: 5px 12px; border: 1px solid var(--rule); border-radius: 999px; font-size: 13px; font-weight: 500; color: var(--ink); text-decoration: none; }
+.lens a:hover { border-color: var(--ink); }
+.lens a[aria-current='true'] { background: var(--ink); border-color: var(--ink); color: var(--paper); }

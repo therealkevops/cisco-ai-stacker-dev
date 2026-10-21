@@ -1,24 +1,40 @@
 import React from 'react';
 import { LINK_STYLES, styleOf } from '../map/linkstyle.js';
 import { LineSample } from '../map/LineKey.jsx';
-import { PRIMITIVES, LINK_TYPES, NODES, LINKS } from '../data/stack.js';
-import { USE_CASES } from '../data/usecases.js';
-import {
-  nodeById, primitiveById, productsIn, designs, coverage, linksOf, primitiveLinks, designsIncluding, membersOf, href,
-  caseById, assess, summarise, casesNeeding, detailsOf, primitiveDetailsOf,
-} from '../data/model.js';
+import { MODELS } from '../data/model.js';
+
+// The lens being shown (Cisco or NVIDIA) is handed down by context, so every piece reads the same data.
+const ModelContext = React.createContext(null);
+const useModel = () => React.useContext(ModelContext);
+
+const VENDOR_NAMES = { cisco: 'Cisco', nvidia: 'NVIDIA', partner: 'Partner' };
 
 function Dot({ vendor }) {
-  return <span className={'dot ' + (vendor === 'cisco' ? 'filled' : 'open')} aria-hidden="true" />;
+  const model = useModel();
+  return <span className={'dot ' + (vendor === model.data.focus ? 'filled' : 'open')} aria-hidden="true" />;
 }
 
 const Swatch = ({ id }) => <span className={`pip p-${id}`} aria-hidden="true" />;
 
+// Switches the focus of the whole app between the lenses. It always lands on that lens's overview.
+function LensSwitch() {
+  const current = useModel();
+  return (
+    <nav className="lens" aria-label="Focus">
+      <span className="lens-label">Focus</span>
+      {Object.values(MODELS).filter((m) => m.nodes.length > 0).map((m) => (
+        <a key={m.data.id} href={m.href.home} aria-current={m === current ? 'true' : undefined}>{m.data.name}</a>
+      ))}
+    </nav>
+  );
+}
+
 function Legend({ useCase }) {
+  const { data } = useModel();
   return (
     <section className="legend" aria-label="Key">
       <h2 className="label">Key</h2>
-      <p><span className="key-hex cisco" aria-hidden="true" /> Cisco product</p>
+      <p><span className="key-hex own" aria-hidden="true" /> {data.name} product</p>
       <p><span className="key-hex partner" aria-hidden="true" /> Partner product</p>
       <p><span className="key-hex partner dashed" aria-hidden="true" /> Not yet confirmed against a public page</p>
       {useCase && (
@@ -41,13 +57,14 @@ function Legend({ useCase }) {
 }
 
 function Overview() {
+  const { data, primitives, nodes, links, cases, designs, coverage, productsIn, href } = useModel();
   return (
     <>
-      <p className="kicker">The Cisco AI Stack</p>
+      <p className="kicker">{data.title}</p>
       <h1>Primitives, mapped to the portfolio</h1>
       <p className="lede">
         At the centre is the AI workload. Around it are the six primitives it needs, and beside each sit the products that provide it:
-        Cisco first, partners further out. {NODES.filter((n) => !n.kind).length} products, {LINKS.length} integrations.
+        {data.name} first, partners further out. {nodes.filter((n) => !n.kind).length} products, {links.length} integrations.
       </p>
       <ul className="how">
         <li><b>Pick a product</b> to draw its integrations.</li>
@@ -55,10 +72,11 @@ function Overview() {
         <li><b>Pick a design</b> to see which primitives it covers, and which it leaves open.</li>
         <li><b>Pick a use case</b> to see what a customer scenario needs, then check it against a design.</li>
       </ul>
+      {cases.length > 0 && (
       <section aria-labelledby="uc-h">
         <h2 id="uc-h" className="label">Customer use cases</h2>
         <ul className="list">
-          {USE_CASES.map((u) => (
+          {cases.map((u) => (
             <li key={u.id}>
               <a href={href.usecase(u.id)}><span className="pip uc" aria-hidden="true" />{u.name}</a>
               <span className={'sub' + (u.status === 'draft' ? ' unv' : '')}>{u.status === 'draft' ? 'draft' : `${u.needs.length} needs`}</span>
@@ -66,8 +84,9 @@ function Overview() {
           ))}
         </ul>
       </section>
+      )}
       <section aria-labelledby="designs-h">
-        <h2 id="designs-h" className="label">Validated designs: the portfolio lens</h2>
+        <h2 id="designs-h" className="label">{data.designsHeading || 'Validated designs: the portfolio lens'}</h2>
         <ul className="list">
           {designs.map((d) => (
             <li key={d.id}>
@@ -80,7 +99,7 @@ function Overview() {
       <section aria-labelledby="prims-h">
         <h2 id="prims-h" className="label">The primitives</h2>
         <ul className="list">
-          {PRIMITIVES.map((p) => (
+          {primitives.map((p) => (
             <li key={p.id}>
               <a href={href.primitive(p.id)}><Swatch id={p.id} />{p.name}</a>
               <span className="sub">{productsIn(p.id).length} products</span>
@@ -105,13 +124,17 @@ function Features({ items }) {
   );
 }
 
-const Back = () => <a className="back" href={href.home}>Clear selection</a>;
+function Back() {
+  const { href } = useModel();
+  return <a className="back" href={href.home}>Clear selection</a>;
+}
 
 function ProductPanel({ id, onHover }) {
+  const { nodeById, primitiveById, linksOf, designsIncluding, casesNeeding, detailsOf, linkTypes, href } = useModel();
   const node = nodeById.get(id);
   const prim = primitiveById.get(node.primitive);
   const links = linksOf(id);
-  const groups = LINK_TYPES.flatMap((t) =>
+  const groups = linkTypes.flatMap((t) =>
     [t.from, t.to].map((name) => ({ key: t.id + name, name, items: links.filter((l) => l.type === t.id && l.phrase === name) })),
   ).filter((g) => g.items.length);
   const inDesigns = designsIncluding(id);
@@ -120,7 +143,7 @@ function ProductPanel({ id, onHover }) {
   return (
     <>
       <Back />
-      <p className="kicker"><Dot vendor={node.vendor} />{node.vendor === 'cisco' ? 'Cisco' : 'Partner'} &middot; <a href={href.primitive(prim.id)}>{prim.name}</a></p>
+      <p className="kicker"><Dot vendor={node.vendor} />{VENDOR_NAMES[node.vendor] || 'Partner'} &middot; <a href={href.primitive(prim.id)}>{prim.name}</a></p>
       <h1>{node.name}</h1>
       <p className="lede">{detail ? detail.about : node.blurb}</p>
       {node.status === 'check' && <p className="note">Not yet confirmed against a public page. Check before quoting.</p>}
@@ -188,6 +211,7 @@ function ProductPanel({ id, onHover }) {
 }
 
 function PrimitivePanel({ id }) {
+  const { primitiveById, productsIn, primitiveLinks, primitiveDetailsOf, href } = useModel();
   const prim = primitiveById.get(id);
   const prods = productsIn(id);
   const touches = primitiveLinks(id);
@@ -233,6 +257,7 @@ function PrimitivePanel({ id }) {
 }
 
 function DesignPanel({ id }) {
+  const { nodeById, primitiveById, coverage, membersOf, cases, assess, summarise, href } = useModel();
   const design = nodeById.get(id);
   const rows = coverage(id);
   const covered = rows.filter((r) => r.have > 0);
@@ -284,7 +309,7 @@ function DesignPanel({ id }) {
       <section aria-labelledby="duc-h">
         <h2 id="duc-h" className="label">Use cases</h2>
         <ul className="list">
-          {USE_CASES.map((u) => {
+          {cases.map((u) => {
             const sum = summarise(assess(u.id, id));
             return (
               <li key={u.id}>
@@ -312,6 +337,7 @@ function DesignPanel({ id }) {
 }
 
 function NeedRow({ need, found }) {
+  const { nodeById, href } = useModel();
   const names = need.products.map((id) => nodeById.get(id));
   const state = found ? (found.met ? 'met' : 'gap') : 'open';
   return (
@@ -338,6 +364,7 @@ function NeedRow({ need, found }) {
 }
 
 function UseCasePanel({ id, designId }) {
+  const { nodeById, designs, caseById, assess, summarise, href } = useModel();
   const uc = caseById.get(id);
   const assessed = designId ? assess(id, designId) : null;
   const sum = assessed ? summarise(assessed) : null;
@@ -406,9 +433,11 @@ function UseCasePanel({ id, designId }) {
   );
 }
 
-export default function Panel({ route, onHover }) {
+export default function Panel({ model, route, onHover }) {
   return (
+    <ModelContext.Provider value={model}>
     <aside className="panel" aria-label="Details">
+      <LensSwitch />
       {route.kind === null && <Overview />}
       {route.kind === 'product' && <ProductPanel id={route.id} onHover={onHover} />}
       {route.kind === 'primitive' && <PrimitivePanel id={route.id} />}
@@ -416,5 +445,6 @@ export default function Panel({ route, onHover }) {
       {route.kind === 'usecase' && <UseCasePanel id={route.id} designId={route.design} />}
       <Legend useCase={route.kind === 'usecase'} />
     </aside>
+    </ModelContext.Provider>
   );
 }

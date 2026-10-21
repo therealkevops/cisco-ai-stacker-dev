@@ -1,6 +1,4 @@
 import React, { useMemo } from 'react';
-import { PRIMITIVES, NODES } from '../data/stack.js';
-import { nodeById, layoutOrder, linksBetweenProducts, membersOf, coverage, productsIn, assess, caseById, href } from '../data/model.js';
 import { layoutMap, allCells, hexPoints, toPixel, linkPath, wrapLabel, cellKey } from './hexgrid.js';
 import { styleOf, stylesPresent } from './linkstyle.js';
 import LineKey from './LineKey.jsx';
@@ -9,17 +7,22 @@ const SIZE = 52; // centre-to-corner of a cell, in map units
 const GAP = 0.93; // hexes are drawn slightly smaller than their cell, leaving a thin channel between
 const MAX_LABEL = 11; // characters per line inside a product hex
 
-const layout = layoutMap(PRIMITIVES, layoutOrder(), SIZE);
-const used = new Set([...layout.values()].map((c) => cellKey(c.q, c.r)));
-const ghosts = allCells(6).filter(([q, r]) => !used.has(cellKey(q, r))).map(([q, r]) => ({ q, r, ...toPixel(q, r, SIZE) }));
-
-const bounds = (() => {
-  const xs = [];
-  const ys = [];
-  for (const c of layout.values()) for (const [x, y] of hexPoints(c.x, c.y, SIZE)) (xs.push(x), ys.push(y));
-  const pad = 26;
-  return { x: Math.min(...xs) - pad, y: Math.min(...ys) - pad, w: Math.max(...xs) - Math.min(...xs) + pad * 2, h: Math.max(...ys) - Math.min(...ys) + pad * 2 };
-})();
+// Where every hexagon sits, for one lens. The geometry depends only on the lens, so it is worked out once.
+const geometries = new Map();
+function geometryOf(model) {
+  if (!geometries.has(model.data.id)) {
+    const layout = layoutMap(model.primitives, model.layoutOrder(), SIZE);
+    const used = new Set([...layout.values()].map((c) => cellKey(c.q, c.r)));
+    const ghosts = allCells(6).filter(([q, r]) => !used.has(cellKey(q, r))).map(([q, r]) => ({ q, r, ...toPixel(q, r, SIZE) }));
+    const xs = [];
+    const ys = [];
+    for (const c of layout.values()) for (const [x, y] of hexPoints(c.x, c.y, SIZE)) (xs.push(x), ys.push(y));
+    const pad = 26;
+    const bounds = { x: Math.min(...xs) - pad, y: Math.min(...ys) - pad, w: Math.max(...xs) - Math.min(...xs) + pad * 2, h: Math.max(...ys) - Math.min(...ys) + pad * 2 };
+    geometries.set(model.data.id, { layout, ghosts, bounds });
+  }
+  return geometries.get(model.data.id);
+}
 
 function Label({ lines, cls, dy = 0 }) {
   const lh = cls === 'primitive-label' ? 20 : 14;
@@ -35,10 +38,15 @@ function Label({ lines, cls, dy = 0 }) {
   );
 }
 
-export default function HexMap({ route, hoverId }) {
+export default function HexMap({ model, route, hoverId }) {
+  const PRIMITIVES = model.primitives;
+  const { href, productsIn } = model;
+  const { layout, ghosts, bounds } = geometryOf(model);
+  const NODES = model.nodes;
   // What is lit for the current selection: a product and its neighbours, a design's members, or a
   // primitive's own products.
   const view = useMemo(() => {
+    const { nodeById, linksBetweenProducts, membersOf, coverage, productsIn, assess, caseById } = model;
     const none = { lit: null, links: [], selected: null, badges: null, needs: null };
     if (route.kind === 'product') {
       const links = linksBetweenProducts(route.id);
@@ -74,7 +82,7 @@ export default function HexMap({ route, hoverId }) {
       return { ...none, lit, selected: route.id };
     }
     return none;
-  }, [route]);
+  }, [route, model]);
 
   const stateOf = (id) => {
     if (!view.lit) return '';
@@ -94,7 +102,7 @@ export default function HexMap({ route, hoverId }) {
       className="map"
       viewBox={`${bounds.x} ${bounds.y} ${bounds.w} ${bounds.h}`}
       role="group"
-      aria-label="Honeycomb map of the Cisco AI stack. The centre is the AI workload, the ring around it is the six primitives, and each primitive's products sit beside it."
+      aria-label={`Honeycomb map of the ${model.name} AI stack. The centre is the AI workload, the ring around it is the six primitives, and each primitive's products sit beside it.`}
     >
       <defs>
         {/* Markers keep a fixed size whatever the line weight, so a heavy style never gets a huge arrowhead. */}
@@ -132,9 +140,9 @@ export default function HexMap({ route, hoverId }) {
 
       {NODES.filter((n) => !n.kind).map((n) => {
         const c = layout.get(n.id);
-        const cls = ['hex', 'product', `p-${n.primitive}`, n.vendor, n.status === 'check' ? 'unverified' : '', stateOf(n.id), needClass(n.id)].filter(Boolean).join(' ');
+        const cls = ['hex', 'product', `p-${n.primitive}`, n.vendor === model.focus ? 'own' : 'partner', n.status === 'check' ? 'unverified' : '', stateOf(n.id), needClass(n.id)].filter(Boolean).join(' ');
         return (
-          <a key={n.id} href={href.product(n.id)} aria-label={`${n.name}, ${n.vendor === 'cisco' ? 'Cisco' : 'partner'}${n.status === 'check' ? ', not yet confirmed' : ''}`}>
+          <a key={n.id} href={href.product(n.id)} aria-label={`${n.name}, ${n.vendor === model.focus ? model.name : 'partner'}${n.status === 'check' ? ', not yet confirmed' : ''}`}>
             <g className={cls} transform={`translate(${c.x},${c.y})`}>
               <title>{n.name}</title>
               <polygon points={hexPoints(0, 0, SIZE * GAP).map((q) => q.join(',')).join(' ')} />
