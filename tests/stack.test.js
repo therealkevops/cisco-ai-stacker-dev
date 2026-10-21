@@ -29,6 +29,7 @@ test('every layer is populated, with one frame and a sensible layout', () => {
     assert.ok(NODES.some((n) => n.layer === l.id), `${l.id} is empty`);
     assert.ok(['frame', 'stack', 'cross'].includes(l.group), `${l.id}: group`);
     assert.ok(l.summary.length > 20, `${l.id}: summary`);
+    assert.ok(l.tagline && l.tagline.length < 40, `${l.id}: tagline`);
   }
   assert.equal(LAYERS.filter((l) => l.group === 'frame').length, 1);
   assert.ok(LAYERS.filter((l) => l.group === 'stack').length >= 3);

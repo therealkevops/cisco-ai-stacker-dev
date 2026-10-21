@@ -6,12 +6,13 @@ export function VendorDot({ vendor }) {
   return <span className={'dot ' + (vendor === 'cisco' ? 'filled' : 'open')} aria-hidden="true" />;
 }
 
-export function Legend() {
+export function Legend({ lines = false }) {
   return (
     <p className="legend">
       <span><span className="dot filled" aria-hidden="true" /> Cisco</span>
       <span><span className="dot open" aria-hidden="true" /> Partner</span>
       <span><span className="swatch dashed" aria-hidden="true" /> Not yet confirmed against a public page</span>
+      {lines && <span>Lines point the way the relationship runs; a ringed end means &ldquo;contains&rdquo;</span>}
     </p>
   );
 }

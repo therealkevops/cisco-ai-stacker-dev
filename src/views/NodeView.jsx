@@ -1,5 +1,5 @@
 import React from 'react';
-import { nodeById, layerById, linksOf, hrefLayer, hrefNode, nodesIn } from '../data/model.js';
+import { nodeById, layerById, linksOf, hrefLayer, hrefNode, hrefPick, nodesIn } from '../data/model.js';
 import { LINK_TYPES } from '../data/stack.js';
 import { VendorDot } from './Marks.jsx';
 
@@ -22,7 +22,10 @@ export default function NodeView({ id }) {
         <h1>{node.name}</h1>
         <p className="lede">{node.blurb}</p>
         {node.status === 'check' && <p className="note">Not confirmed against a public page. Check before quoting.</p>}
-        <p><a className="source" href={node.url} target="_blank" rel="noreferrer">Source</a></p>
+        <p className="page-links">
+          <a href={hrefPick(id)}>Show on the stack</a>
+          <a className="source" href={node.url} target="_blank" rel="noreferrer">Source</a>
+        </p>
       </header>
 
       <section className="section" aria-labelledby="ints">

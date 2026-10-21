@@ -20,21 +20,21 @@ export const SOURCES = {
 // designs), 'stack' is a band in the vertical stack (top is closest to the workload, bottom is
 // silicon), and 'cross' runs alongside every band. Order within a group is top to bottom.
 export const LAYERS = [
-  { id: 'design', group: 'frame', name: 'Validated designs',
+  { id: 'design', group: 'frame', name: 'Validated designs', tagline: 'Pre-tested bundles',
     summary: 'Pre-tested combinations of the layers below, sold as complete stacks or as individual parts.' },
-  { id: 'platform', group: 'stack', name: 'Platform',
+  { id: 'platform', group: 'stack', name: 'Platform', tagline: 'Where models and agents run',
     summary: 'Kubernetes, the GPU software stack and cluster networking that models and agents run on.' },
-  { id: 'data', group: 'stack', name: 'Data and storage',
+  { id: 'data', group: 'stack', name: 'Data and storage', tagline: 'Validated storage partners',
     summary: 'Storage partners validated with the stack for datasets and model data.' },
-  { id: 'network', group: 'stack', name: 'Network fabric',
+  { id: 'network', group: 'stack', name: 'Network fabric', tagline: 'Lossless Ethernet for GPUs',
     summary: 'Lossless Ethernet for GPU-to-GPU traffic and the front-end network, with the controllers that manage it.' },
-  { id: 'compute', group: 'stack', name: 'Compute',
+  { id: 'compute', group: 'stack', name: 'Compute', tagline: 'GPU servers and their management',
     summary: 'GPU servers and the management plane that provisions and monitors them.' },
-  { id: 'silicon', group: 'stack', name: 'Silicon and accelerators',
+  { id: 'silicon', group: 'stack', name: 'Silicon and accelerators', tagline: 'What everything is built on',
     summary: 'The switch silicon, GPUs and DPUs that everything above is built on.' },
-  { id: 'security', group: 'cross', name: 'Security',
+  { id: 'security', group: 'cross', name: 'Security', tagline: 'Protects the whole stack',
     summary: 'Protects models, agents, workloads and the network, from runtime enforcement to the SOC.' },
-  { id: 'ops', group: 'cross', name: 'Operations and agents',
+  { id: 'ops', group: 'cross', name: 'Operations and agents', tagline: 'Observe, automate, connect agents',
     summary: 'Observability, AI-driven operations and the open protocols agents use to find and talk to each other.' },
 ];
 
