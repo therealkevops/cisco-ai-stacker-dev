@@ -9,7 +9,7 @@ const sourceUrls = { cisco: new Set(Object.values(SOURCES)), nvidia: new Set(Obj
 test('every use case exists in both focuses, so each scenario can be read from either vendor\'s side', () => {
   const ids = (m) => m.cases.map((u) => u.id).sort();
   assert.deepEqual(ids(MODELS.cisco), ids(MODELS.nvidia));
-  assert.ok(ids(MODELS.cisco).length >= 4);
+  assert.ok(ids(MODELS.cisco).length >= 8);
   for (const id of ids(MODELS.cisco)) {
     const [a, b] = [MODELS.cisco.caseById.get(id), MODELS.nvidia.caseById.get(id)];
     assert.equal(a.name, b.name, `${id}: the scenario keeps one name`);
@@ -31,7 +31,7 @@ for (const [lens, m] of Object.entries(MODELS)) {
     for (const u of m.cases) {
       const all = u.needs.flatMap((n) => n.products);
       assert.equal(new Set(all).size, all.length, `${u.id}: a product is in two needs`);
-      assert.ok(u.needs.filter((n) => n.role === 'required').length >= 5, `${u.id}: too few required needs`);
+      assert.ok(u.needs.filter((n) => n.role === 'required').length >= 3, `${u.id}: too few required needs`);
       assert.ok(u.needs.some((n) => n.role === 'recommended'), `${u.id}: no recommended needs`);
       for (const n of u.needs) {
         assert.ok(['required', 'recommended'].includes(n.role));
@@ -43,7 +43,8 @@ for (const [lens, m] of Object.entries(MODELS)) {
 
   test(`${lens}: every design a use case lists exists and meets every required need`, () => {
     for (const u of m.cases) {
-      assert.ok(u.designs.length >= 1, u.id);
+      // Only a draft may say that no published design validates the scenario end to end.
+      assert.ok(u.designs.length >= 1 || u.status === 'draft', u.id);
       for (const d of u.designs) {
         assert.equal(m.nodeById.get(d)?.kind, 'design', `${u.id}: ${d}`);
         const s = m.summarise(m.assess(u.id, d));
@@ -85,4 +86,38 @@ test('a use case checked against a design built for something else shows real ga
   const c = MODELS.cisco;
   const t = c.summarise(c.assess('secure-private-ai', 'pod-2-8-9-400'));
   assert.ok(t.required.met < t.required.total);
+});
+
+test('where the evidence supports fewer than five required needs, the use case is a draft and says why', () => {
+  for (const m of Object.values(MODELS))
+    for (const u of m.cases) {
+      const required = u.needs.filter((n) => n.role === 'required').length;
+      if (required < 5) {
+        assert.equal(u.status, 'draft', `${m.data.id}/${u.id}: only ${required} required needs, so it cannot be sourced`);
+        assert.match(u.caveat, /only three|no .*design|weakest|AI SOC/i, `${m.data.id}/${u.id}: the caveat should say the evidence is thin`);
+      }
+    }
+});
+
+test('a scenario with no validated design lists none, and every design can still be checked against it', () => {
+  const nv = MODELS.nvidia;
+  const tuning = nv.caseById.get('llm-fine-tuning');
+  assert.deepEqual(tuning.designs, []);
+  for (const d of nv.designs) {
+    const s = nv.summarise(nv.assess('llm-fine-tuning', d.id));
+    assert.ok(s.required.met < s.required.total, `${d.id} should not meet a scenario no NVIDIA document validates`);
+  }
+  assert.ok(nv.membersOf('nv-data-flywheel').has('nemo') && !nv.membersOf('nv-data-flywheel').has('nemo-guardrails'), 'the flywheel uses Customizer and Evaluator, not all of NeMo');
+});
+
+test('the new Cisco designs are published documents with sources, and the heavy ones carry a bill of materials', () => {
+  const c = MODELS.cisco;
+  for (const id of ['ai-pod-training', 'flexpod-aipod-train', 'aipod-everpure-train', 'hf-cloud-ra-h200', 'saf-rackscale', 'cisco-live-soc']) {
+    assert.equal(c.nodeById.get(id).kind, 'design');
+    assert.match(c.nodeById.get(id).url, /^https:\/\//);
+  }
+  assert.ok(c.nodeById.get('hf-cloud-ra-h200').bom.length >= 5);
+  // The rack-scale overview is a different design from the Cloud RA: its Supermicro-built racks and missing AI Enterprise show as gaps.
+  const s = c.summarise(c.assess('multi-tenant-ai-cloud', 'saf-rackscale'));
+  assert.ok(s.required.met > 0 && s.required.met < s.required.total);
 });

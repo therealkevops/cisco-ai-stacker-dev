@@ -438,10 +438,14 @@ function UseCasePanel({ id, designId }) {
       <section aria-labelledby="chk-h">
         <h2 id="chk-h" className="label">Check it against a design</h2>
         <p className="sublabel">Validated for this use case</p>
-        <ul className="list">{uc.designs.map((d) => designRow(nodeById.get(d)))}</ul>
+        {uc.designs.length > 0 ? (
+          <ul className="list">{uc.designs.map((d) => designRow(nodeById.get(d)))}</ul>
+        ) : (
+          <p className="gapnote">No published design validates this scenario end to end. Check it against one of the designs below to see what each leaves open.</p>
+        )}
         {others.length > 0 && (
-          <details className="others" open={others.some((d) => d.id === designId)}>
-            <summary>Compare with another design</summary>
+          <details className="others" open={uc.designs.length === 0 || others.some((d) => d.id === designId)}>
+            <summary>{uc.designs.length === 0 ? 'Check against a design' : 'Compare with another design'}</summary>
             <ul className="list">{others.map(designRow)}</ul>
           </details>
         )}

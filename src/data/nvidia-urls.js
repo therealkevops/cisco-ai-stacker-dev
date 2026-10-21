@@ -72,5 +72,10 @@ export const NV = {
   eraRagOverview: 'https://docs.nvidia.com/enterprise-reference-architectures/enterprise-rag-deployment-guide/latest/enterprise-ra-overview.html',
   ragBlueprint: 'https://build.nvidia.com/nvidia/build-an-enterprise-rag-pipeline',
   eraAiQ: 'https://docs.nvidia.com/enterprise-reference-architectures/ai-q-research-agent-blueprint/latest/system-overview-and-architecture.html',
+  opsAgent: 'https://build.nvidia.com/nvidia/operate-ai-factories-with-agents',
+  vulnBlueprint: 'https://build.nvidia.com/nvidia/vulnerability-analysis-for-container-security',
+  socTriageBlog: 'https://developer.nvidia.com/blog/augmenting-security-operations-centers-with-accelerated-alert-triage-and-llm-agents-using-nvidia-morpheus/',
+  dataFlywheel: 'https://build.nvidia.com/nvidia/build-an-enterprise-data-flywheel',
+  ncpGb300: 'https://docs.nvidia.com/dsx/ncp/inference-provider-requirements/home',
   eraK8sGuide: 'https://docs.nvidia.com/enterprise-reference-architectures/upstream-kubernetes-enterprise-ra-deployment-guide/latest/overview.html',
 };
