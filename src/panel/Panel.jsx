@@ -381,7 +381,8 @@ function NeedRow({ need, found }) {
 }
 
 function UseCasePanel({ id, designId }) {
-  const { nodeById, designs, caseById, assess, summarise, href } = useModel();
+  const { data, nodeById, designs, caseById, assess, summarise, href } = useModel();
+  const elsewhere = Object.values(MODELS).filter((m) => m.data.id !== data.id && m.caseById.has(id));
   const uc = caseById.get(id);
   const assessed = designId ? assess(id, designId) : null;
   const sum = assessed ? summarise(assessed) : null;
@@ -405,7 +406,7 @@ function UseCasePanel({ id, designId }) {
       <h1>{uc.name}</h1>
       <p className="lede">{uc.summary}</p>
       {uc.status === 'draft' ? (
-        <p className="note">Draft: an editorial reading of Cisco's published designs. Review before using with a customer.</p>
+        <p className="note">Draft: an editorial reading of {data.name}'s published designs. Review before using with a customer.</p>
       ) : (
         <p className="lede small">The required needs come from the design guides below. The recommended ones are suggestions, not part of those designs.</p>
       )}
@@ -423,6 +424,14 @@ function UseCasePanel({ id, designId }) {
             </p>
           )}
         </section>
+      )}
+
+      {elsewhere.length > 0 && (
+        <p className="src">
+          The same use case in the other focus: {elsewhere.map((m, i) => (
+            <React.Fragment key={m.data.id}>{i > 0 && ', '}<a href={m.href.usecase(id)}>{m.data.name}</a></React.Fragment>
+          ))}
+        </p>
       )}
 
       <section aria-labelledby="chk-h">
