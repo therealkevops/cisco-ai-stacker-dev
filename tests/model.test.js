@@ -38,9 +38,15 @@ test('a design brings in what it contains, all the way down', () => {
 test('containment only goes downward: a part does not pull in what contains it', () => {
   const pod = membersOf('pod-2-8-9-400');
   assert.ok(pod.has('n9364e'));
-  assert.ok(!pod.has('nexus-9000'), 'the 9364E-SG2 is a Nexus 9000 model, but the POD does not include the whole family');
-  assert.ok(!pod.has('spectrum-x'));
+  assert.ok(!pod.has('spectrum-x'), 'the platform that a switch takes part in is not pulled in by the switch');
   assert.ok(!pod.has('ai-pod'));
+});
+
+test('a design built on a model also uses its family, but a family alone never brings in a model', () => {
+  assert.ok(membersOf('pod-2-8-9-400').has('nexus-9000'), 'a 9364E-SG2 design is a Nexus 9000 design');
+  assert.ok(membersOf('flexpod-rag').has('nexus-9000'));
+  assert.ok(!membersOf('flexpod-rag').has('n9364e'), 'the RAG designs use the family, not that model');
+  assert.ok(!membersOf('flexpod-rag').has('silicon-one'));
 });
 
 test('coverage counts every primitive, and never exceeds what the primitive offers', () => {
@@ -75,11 +81,6 @@ test('the two RAG CVDs cover compute, platform, network and data, and leave secu
   }
   assert.ok(membersOf('flexpod-rag').has('netapp') && !membersOf('flexpod-rag').has('pure'));
   assert.ok(membersOf('flashstack-rag').has('pure') && !membersOf('flashstack-rag').has('netapp'));
-});
-
-test('a model of a product family is not pulled in by the family', () => {
-  assert.ok(membersOf('flexpod-rag').has('nexus-9000'));
-  assert.ok(!membersOf('flexpod-rag').has('n9364e'));
 });
 
 test('designsIncluding finds the designs that contain a product', () => {

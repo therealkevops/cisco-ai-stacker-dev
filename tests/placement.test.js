@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { nodeById, productsIn } from '../src/data/model.js';
+import { nodeById, productsIn, membersOf, coverage } from '../src/data/model.js';
 import { PRIMITIVES, LINKS } from '../src/data/stack.js';
 
 // Where each product sits is the claim readers remember most, so it is checked against how Cisco
@@ -50,4 +50,73 @@ test('Pure Storage is shown under its 2026 name, Everpure, and says so', () => {
 test('the Secure AI Factory link to Isovalent Runtime Security is marked unconfirmed, since the current page dropped it', () => {
   const l = LINKS.find((x) => x.a === 'secure-ai-factory' && x.b === 'isovalent-runtime');
   assert.equal(l.status, 'check');
+});
+
+// ---- Relationship accuracy: findings from checking every link against the primary sources ----
+
+test('the 2-8-9-400 design includes what its own guide lists: management, platform and storage, not just hardware', () => {
+  const m = membersOf('pod-2-8-9-400');
+  for (const id of ['c885a', 'n9364e', 'nvidia-gpu', 'bluefield', 'intersight', 'nexus-dashboard', 'openshift', 'nvidia-ai-enterprise', 'netapp', 'pure', 'vast']) {
+    assert.ok(m.has(id), `the 2-8-9-400 guide lists ${id}`);
+  }
+  const covered = coverage('pod-2-8-9-400').filter((r) => r.have > 0).map((r) => r.primitive.id).sort();
+  assert.deepEqual(covered, ['compute', 'data', 'network', 'platform'], 'covers four primitives and leaves security and operations open');
+});
+
+test('the 2-8-5-200 design is documented, and no longer marked unverified', () => {
+  assert.equal(nodeById.get('pod-2-8-5-200').status, 'sourced');
+  assert.match(nodeById.get('pod-2-8-5-200').url, /ai-pod-nvidia-2-8-5-200-era/);
+  const m = membersOf('pod-2-8-5-200');
+  for (const id of ['c845a', 'n9364e', 'bluefield', 'nexus-9000', 'intersight', 'nexus-dashboard', 'openshift', 'nvidia-ai-enterprise', 'netapp', 'pure', 'vast']) {
+    assert.ok(m.has(id), `the 2-8-5-200 guide lists ${id}`);
+  }
+  const covered = coverage('pod-2-8-5-200').filter((r) => r.have > 0).map((r) => r.primitive.id).sort();
+  assert.deepEqual(covered, ['compute', 'data', 'network', 'platform']);
+});
+
+test('Spectrum-X on the 9364E-SG2 is confirmed, with its licence condition stated', () => {
+  const l = LINKS.find((x) => x.a === 'spectrum-x' && x.b === 'n9364e');
+  assert.equal(l.status, 'sourced');
+  assert.match(l.label, /licence/);
+});
+
+test('no source connects Splunk Observability to AGNTCY, so there is no such link', () => {
+  assert.equal(LINKS.filter((l) => [l.a, l.b].includes('splunk-obs') && [l.a, l.b].includes('agntcy')).length, 0);
+});
+
+test('AGNTCY\'s only connection is the single-report AI Canvas one, and it says so', () => {
+  const ls = LINKS.filter((l) => l.a === 'agntcy' || l.b === 'agntcy');
+  assert.equal(ls.length, 1);
+  assert.equal(ls[0].status, 'check');
+});
+
+test('storage reaches the front-end Nexus fabric, as the 2-8-5-200 guide states for NetApp, Everpure and VAST', () => {
+  for (const b of ['netapp', 'pure', 'vast']) {
+    const l = LINKS.find((x) => x.a === 'nexus-9000' && x.b === b);
+    assert.ok(l, `Nexus 9000 to ${b}`);
+    assert.equal(l.status, 'sourced');
+  }
+});
+
+test('Intersight\'s link to storage and switches is only what the CVD says: that Assist connects them', () => {
+  for (const b of ['pure', 'nexus-9000']) {
+    const l = LINKS.find((x) => x.a === 'intersight' && x.b === b);
+    assert.equal(l.type, 'observes', `${b}: the guide says "connects", not "manages"`);
+    assert.match(l.label, /does not say/);
+  }
+});
+
+test('integrations the documentation confirms are no longer marked unverified', () => {
+  const status = (a, b) => LINKS.find((x) => x.a === a && x.b === b)?.status;
+  assert.equal(status('xdr', 'splunk-es'), 'sourced', 'a documented two-way link');
+  assert.equal(status('ai-defense', 'splunk-es'), 'sourced', 'AI Defense forwards events to Splunk');
+  assert.equal(status('thousandeyes', 'ai-canvas'), 'sourced', 'Cisco names ThousandEyes as an AI Canvas telemetry source');
+  assert.equal(status('isovalent-runtime', 'kubernetes'), 'sourced');
+  assert.equal(status('spectrum-x', 'bluefield'), 'sourced');
+});
+
+test('what AI Canvas can do in the data center is only unconfirmed, since Cisco says its lists are illustrative', () => {
+  for (const b of ['nexus-dashboard', 'hyperfabric', 'intersight']) {
+    assert.equal(LINKS.find((x) => x.a === 'ai-canvas' && x.b === b).status, 'check', b);
+  }
 });

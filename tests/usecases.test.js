@@ -47,11 +47,11 @@ test('the designs a use case lists exist and are designs', () => {
   }
 });
 
-test('a sourced use case is fully met, on the required side, by every design it lists', () => {
-  for (const u of USE_CASES.filter((x) => x.status === 'sourced'))
-    for (const d of u.designs) {
-      const s = summarise(assess(u.id, d));
-      assert.equal(s.required.met, s.required.total, `${u.id} against ${d}: a validated design should meet every required need`);
+test('a design a use case lists as validated meets every one of its required needs', () => {
+  for (const uc of USE_CASES)
+    for (const d of uc.designs) {
+      const s = summarise(assess(uc.id, d));
+      assert.equal(s.required.met, s.required.total, `${uc.id} against ${d}: a validated design should meet every required need`);
     }
 });
 

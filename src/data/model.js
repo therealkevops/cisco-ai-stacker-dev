@@ -49,6 +49,9 @@ export function membersOf(designId) {
       }
     }
   }
+  // Including a model means using its family: a design built on the 9364E-SG2 is a Nexus 9000 design.
+  // The reverse does not hold, so the family alone never pulls in a particular model.
+  for (const l of LINKS) if (l.type === 'models' && found.has(l.b)) found.add(l.a);
   return found;
 }
 
