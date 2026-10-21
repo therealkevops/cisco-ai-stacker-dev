@@ -1,39 +1,35 @@
-# The Cisco AI Stack, in orbit
+# The Cisco AI Stack
 
-An interactive chart of the Cisco AI stack and the integrations between its parts, drawn as an orrery. Each layer is an orbit, each product or partner is a body on it, and each integration is a line between two bodies.
+A clickable diagram of the Cisco AI stack: what each layer is, which products and partners sit in it, and how they integrate.
 
-Heavy hardware sits on the inner orbits and software and agents on the outer ones. Every body is held to its orbit by a spring ("gravity"), pushed apart from its neighbours, and tugged by its integrations.  The chart is still at rest, so labels stay readable.
+Three levels, each a plain link, so the back button works and any page can be shared by its URL:
 
-## Using it
+1. **The stack** (`#/`): validated designs frame the whole picture, five layers run top to bottom (platform, data, network, compute, silicon), and security and operations run alongside all of them.
+2. **A layer** (`#/layer/network`): its products, and every integration that leaves the layer, grouped by the layer it reaches.
+3. **A product** (`#/node/n9364e`): what it is, a link to its source, and its integrations written out from its point of view ("Contains", "Is part of", "Manages", "Is managed by"…).
 
-- **Drag** a body and let go: it falls back into orbit. **Drag the background** to pan, **scroll** to zoom.
-- **Select** a body (click it, or pick it from the list) and its integration partners are released from their orbits and fall in toward it. Everything else dims.
-- **Gravity** slider: at zero the bodies drift free of their orbits, at two the chart goes rigid.
-- **Integrations** legend: click a type to hide it. Types are told apart by dash pattern, not colour.
-- A selection is stored in the URL hash, so `#/ai-canvas` links straight to that body.
-
-Filled circles are Cisco, open circles are partners, and a bar through a body means it is not yet confirmed against a public page.
+Filled dots are Cisco, open dots are partners, and a dashed outline means the entry is not yet confirmed against a public page.
 
 ## Running it
 
 ```
 npm install
 npm run dev      # http://localhost:8999
-npm test         # data integrity and physics
+npm test         # data integrity and navigation
 npm run lint
-npm run build
+npm run build    # static files in dist/, ready for Vercel or any static host
 ```
 
 ## Where the content lives
 
-All of the content is in [`src/data/stack.js`](src/data/stack.js): the orbits, the bodies and the links, each with a `status` of `sourced` or `check` and a source URL. The tests fail if a link points at a body that does not exist, a body has no source, or the graph falls into separate pieces.
+Everything is in [`src/data/stack.js`](src/data/stack.js): the layers, the products and the integrations, each with a `status` of `sourced` or `check` and a source URL. Integrations are directional (a to b), so "Nexus 9000 contains Nexus 9364E-SG2" reads correctly from both ends. The tests fail if a link points at a product that does not exist, a product has no source, the graph falls into separate pieces, or an integration reads the same from both ends.
 
-To add a body, add an entry to `NODES` and at least one `L(...)` line to `LINKS`.
+To add a product, add an entry to `NODES` and at least one `L(...)` line to `LINKS`.
 
 ### Accuracy
 
-Cisco renames and repackages products often, and some details in the public sources disagree (for example which ASIC is in the Nexus 9364E-SG2). Anything not confirmed is marked `check` and shows as unverified in the chart. Re-check before using this in front of a customer.
+Cisco renames and repackages products often, and some details in the public sources disagree (for example which ASIC is in the Nexus 9364E-SG2). Anything not confirmed is marked `check` and shows as unverified. Re-check before using this in front of a customer.
 
 ## How it is built
 
-React and Vite, with no chart or physics library. The physics is a small fixed-step simulation in [`src/sim/physics.js`](src/sim/physics.js), free of the DOM so it is tested under Node. The drawing is plain Canvas 2D in [`src/render/draw.js`](src/render/draw.js).
+React and Vite, no other runtime dependencies. Routing is the URL hash, and every view is static HTML, so it loads instantly and runs on any static host.

@@ -14,7 +14,6 @@ test('every node sits in a known layer, with a valid vendor, mass and status', (
   for (const n of NODES) {
     assert.ok(layerIds.has(n.layer), `${n.id}: unknown layer ${n.layer}`);
     assert.ok(['cisco', 'partner'].includes(n.vendor), `${n.id}: vendor`);
-    assert.ok([1, 2, 3].includes(n.mass), `${n.id}: mass`);
     assert.ok(['sourced', 'check'].includes(n.status), `${n.id}: status`);
     assert.ok(n.blurb.length > 20, `${n.id}: blurb`);
   }
@@ -25,10 +24,15 @@ test('every node cites a URL from the SOURCES list', () => {
   for (const n of NODES) assert.ok(urls.has(n.url), `${n.id}: url not in SOURCES`);
 });
 
-test('every layer is populated and orbits are ordered inside to out', () => {
-  for (const l of LAYERS) assert.ok(NODES.some((n) => n.layer === l.id), `${l.id} is empty`);
-  for (let i = 1; i < LAYERS.length; i++) assert.ok(LAYERS[i].r > LAYERS[i - 1].r);
-  assert.equal(LAYERS[LAYERS.length - 1].r, 1);
+test('every layer is populated, with one frame and a sensible layout', () => {
+  for (const l of LAYERS) {
+    assert.ok(NODES.some((n) => n.layer === l.id), `${l.id} is empty`);
+    assert.ok(['frame', 'stack', 'cross'].includes(l.group), `${l.id}: group`);
+    assert.ok(l.summary.length > 20, `${l.id}: summary`);
+  }
+  assert.equal(LAYERS.filter((l) => l.group === 'frame').length, 1);
+  assert.ok(LAYERS.filter((l) => l.group === 'stack').length >= 3);
+  assert.equal(new Set(LAYERS.map((l) => l.id)).size, LAYERS.length);
 });
 
 test('links join known nodes with a known type, no self loops, no duplicates', () => {
