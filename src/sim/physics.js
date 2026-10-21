@@ -1,0 +1,181 @@
+// The orrery's physics. No DOM in here, so it runs under node --test.
+//
+// Every body feels four forces:
+//   ring     a spring toward its layer's orbit (the "gravity well"), strength set by `gravity`
+//   repel    a soft push away from nearby bodies, so labels stay readable
+//   link     a weak spring along each integration, which sorts connected bodies into neighbours
+//   drift    a slow tangential push; adjacent orbits turn in opposite directions like gears
+// Selecting a body adds a fifth: its integration partners are released from their orbits a little
+// and fall toward it, then settle back when it is deselected.
+
+export const WORLD_R = 460;
+export const DT = 1 / 60;
+
+const K_RING = 14;
+const K_REPEL = 52000;
+const REPEL_RANGE = 150;
+const K_OVERLAP = 30;
+const K_LINK = 1.6;
+const K_SAME_ORBIT = 2600; // long-range push between bodies on one orbit, so each orbit spreads around its circle
+const SAME_ORBIT_RANGE = 320;
+const LINK_REST = 80;
+const LINK_MAX_STRETCH = 40; // beyond this a link stops pulling harder, so orbits always win
+const K_FOCUS = 1.5;
+const FOCUS_RELAX = 0.3;
+const DAMPING = 0.92;
+const DRIFT_RAD_PER_S = 0.006;
+
+export function mulberry32(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+export function bodyRadius(mass) {
+  return 4 + mass * 2.5;
+}
+
+export function createWorld(layers, nodes, links, seed = 11) {
+  const rand = mulberry32(seed);
+  const layerIndex = new Map(layers.map((l, i) => [l.id, i]));
+  const perLayer = new Map();
+  nodes.forEach((n) => perLayer.set(n.layer, (perLayer.get(n.layer) || 0) + 1));
+  const placed = new Map();
+
+  const bodies = nodes.map((n) => {
+    const li = layerIndex.get(n.layer);
+    const layer = layers[li];
+    const slot = placed.get(n.layer) || 0;
+    placed.set(n.layer, slot + 1);
+    const ring = layer.r * WORLD_R;
+    const angle = li * 0.9 + (slot / perLayer.get(n.layer)) * Math.PI * 2 + (rand() - 0.5) * 0.25;
+    // Tangential speed follows a Kepler-ish falloff; neighbouring orbits run in opposite directions.
+    const dir = li % 2 === 0 ? 1 : -1;
+    const speed = dir * DRIFT_RAD_PER_S * WORLD_R * Math.pow(Math.max(layer.r, 0.12), -0.5);
+    return {
+      id: n.id,
+      layer: n.layer,
+      mass: n.mass,
+      radius: bodyRadius(n.mass),
+      ring,
+      x: Math.cos(angle) * ring,
+      y: Math.sin(angle) * ring,
+      vx: 0,
+      vy: 0,
+      driftForce: (speed * (1 - DAMPING)) / DT,
+      pinned: false,
+    };
+  });
+
+  const index = new Map(bodies.map((b, i) => [b.id, i]));
+  const pairs = links.map((l) => [index.get(l.a), index.get(l.b)]);
+  const neighbours = bodies.map(() => new Set());
+  pairs.forEach(([a, b]) => {
+    neighbours[a].add(b);
+    neighbours[b].add(a);
+  });
+
+  // A hub with a dozen integrations would otherwise be dragged off its orbit by their sum, so each
+  // spring is weakened by the busier of its two ends.
+  const strength = pairs.map(([a, b]) => K_LINK / Math.sqrt(Math.max(neighbours[a].size, neighbours[b].size)));
+
+  return {
+    bodies,
+    index,
+    pairs,
+    strength,
+    neighbours,
+    fx: new Float64Array(bodies.length),
+    fy: new Float64Array(bodies.length),
+  };
+}
+
+// Advance the world one fixed step. `gravity` scales the orbit springs, `drift` scales the slow
+// turning (0 freezes it), `focus` is the index of the selected body or -1.
+export function step(world, { gravity = 1, drift = 1, focus = -1 } = {}) {
+  const { bodies, pairs, strength, neighbours, fx, fy } = world;
+  const n = bodies.length;
+  fx.fill(0);
+  fy.fill(0);
+  const pulled = focus >= 0 ? neighbours[focus] : null;
+  const anchor = focus >= 0 ? bodies[focus] : null;
+
+  for (let i = 0; i < n; i++) {
+    const b = bodies[i];
+    const r = Math.hypot(b.x, b.y) || 1e-3;
+    const ux = b.x / r;
+    const uy = b.y / r;
+    const released = pulled && pulled.has(i);
+    const pull = -K_RING * gravity * (released ? FOCUS_RELAX : 1) * (r - b.ring);
+    fx[i] += pull * ux;
+    fy[i] += pull * uy;
+    fx[i] += -uy * b.driftForce * drift;
+    fy[i] += ux * b.driftForce * drift;
+    if (released) {
+      fx[i] += K_FOCUS * (anchor.x - b.x);
+      fy[i] += K_FOCUS * (anchor.y - b.y);
+    }
+  }
+
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const a = bodies[i];
+      const b = bodies[j];
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      const d2 = dx * dx + dy * dy;
+      const same = a.layer === b.layer;
+      const range = same ? SAME_ORBIT_RANGE : REPEL_RANGE;
+      if (d2 > range * range) continue;
+      const d = Math.sqrt(Math.max(d2, 1));
+      const minD = a.radius + b.radius + 26;
+      let mag = (K_REPEL * Math.sqrt(a.mass * b.mass)) / (d * d);
+      if (same) mag += K_SAME_ORBIT / d;
+      if (d < minD) mag += K_OVERLAP * (minD - d);
+      const ux = dx / d;
+      const uy = dy / d;
+      fx[i] += ux * mag;
+      fy[i] += uy * mag;
+      fx[j] -= ux * mag;
+      fy[j] -= uy * mag;
+    }
+  }
+
+  for (let k = 0; k < pairs.length; k++) {
+    const [i, j] = pairs[k];
+    const dx = bodies[j].x - bodies[i].x;
+    const dy = bodies[j].y - bodies[i].y;
+    const d = Math.hypot(dx, dy) || 1e-3;
+    const mag = strength[k] * Math.min(d - LINK_REST, LINK_MAX_STRETCH);
+    const ux = dx / d;
+    const uy = dy / d;
+    fx[i] += ux * mag;
+    fy[i] += uy * mag;
+    fx[j] -= ux * mag;
+    fy[j] -= uy * mag;
+  }
+
+  for (let i = 0; i < n; i++) {
+    const b = bodies[i];
+    if (b.pinned) {
+      b.vx = 0;
+      b.vy = 0;
+      continue;
+    }
+    const inv = 1 / (0.6 + 0.4 * b.mass);
+    b.vx = (b.vx + fx[i] * inv * DT) * DAMPING;
+    b.vy = (b.vy + fy[i] * inv * DT) * DAMPING;
+    b.x += b.vx * DT * 60;
+    b.y += b.vy * DT * 60;
+  }
+}
+
+// Run the simulation without drawing, so the first frame is already a settled chart.
+export function settle(world, steps = 500, opts = { drift: 0 }) {
+  for (let i = 0; i < steps; i++) step(world, opts);
+}
