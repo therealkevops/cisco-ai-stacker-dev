@@ -5,7 +5,7 @@ import { PRIMITIVES, LINK_TYPES, NODES, LINKS } from '../data/stack.js';
 import { USE_CASES } from '../data/usecases.js';
 import {
   nodeById, primitiveById, productsIn, designs, coverage, linksOf, primitiveLinks, designsIncluding, membersOf, href,
-  caseById, assess, summarise, casesNeeding,
+  caseById, assess, summarise, casesNeeding, detailsOf, primitiveDetailsOf,
 } from '../data/model.js';
 
 function Dot({ vendor }) {
@@ -92,6 +92,19 @@ function Overview() {
   );
 }
 
+function Features({ items }) {
+  return (
+    <ul className="features">
+      {items.map((f) => (
+        <li key={f.name}>
+          <b>{f.name}</b>
+          <span>{f.text}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 const Back = () => <a className="back" href={href.home}>Clear selection</a>;
 
 function ProductPanel({ id, onHover }) {
@@ -102,15 +115,31 @@ function ProductPanel({ id, onHover }) {
     [t.from, t.to].map((name) => ({ key: t.id + name, name, items: links.filter((l) => l.type === t.id && l.phrase === name) })),
   ).filter((g) => g.items.length);
   const inDesigns = designsIncluding(id);
+  const detail = detailsOf(id);
 
   return (
     <>
       <Back />
       <p className="kicker"><Dot vendor={node.vendor} />{node.vendor === 'cisco' ? 'Cisco' : 'Partner'} &middot; <a href={href.primitive(prim.id)}>{prim.name}</a></p>
       <h1>{node.name}</h1>
-      <p className="lede">{node.blurb}</p>
+      <p className="lede">{detail ? detail.about : node.blurb}</p>
       {node.status === 'check' && <p className="note">Not yet confirmed against a public page. Check before quoting.</p>}
-      <p className="src"><a href={node.url} target="_blank" rel="noreferrer">Source</a></p>
+      {!detail && <p className="src"><a href={node.url} target="_blank" rel="noreferrer">Source</a></p>}
+
+      {detail && (
+        <section aria-labelledby="feat-h">
+          <h2 id="feat-h" className="label">Most useful features</h2>
+          <Features items={detail.features} />
+          {detail.caveat && <p className="caveat"><b>Check:</b> {detail.caveat}</p>}
+          <p className="refs">
+            <span>Sources</span>
+            {detail.refs.map(([label, url]) => (
+              <a key={url} href={url} target="_blank" rel="noreferrer">{label}</a>
+            ))}
+          </p>
+          <p className="fineprint">Features are as the vendor states them in the pages above, not independent measurements.</p>
+        </section>
+      )}
 
       {inDesigns.length > 0 && (
         <section>
@@ -168,6 +197,15 @@ function PrimitivePanel({ id }) {
       <p className="kicker"><Swatch id={id} />Primitive</p>
       <h1>{prim.name}</h1>
       <p className="lede">{prim.summary}</p>
+      {primitiveDetailsOf(id) && (
+        <section aria-labelledby="bg-h">
+          <h2 id="bg-h" className="label">Why it matters for AI</h2>
+          <p className="why-it">{primitiveDetailsOf(id).why}</p>
+          <h3 className="sublabel">What to look for</h3>
+          <Features items={primitiveDetailsOf(id).lookFor} />
+          <p className="fineprint">Background explanation, not claims from any vendor.</p>
+        </section>
+      )}
       <section>
         <h2 className="label">{prods.length} products</h2>
         <ul className="list">

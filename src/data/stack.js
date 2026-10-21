@@ -15,6 +15,7 @@ export const SOURCES = {
   outshift: 'https://outshift.cisco.com/blog/building-the-internet-of-agents-introducing-the-AGNTCY',
   foundation: 'https://www.sdxcentral.com/news/cisco-demos-practical-agentic-ai-for-soc-automation/',
   flexpodRag: 'https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flexpod_rag_nim.html',
+  c845aDs: 'https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/ucs-c845a-m8-rack-server-ds.html',
   flashstackRag: 'https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flashstack_rag_nim.html',
 };
 
@@ -88,8 +89,8 @@ export const NODES = [
   // Compute
   { id: 'c885a', name: 'UCS C885A M8', primitive: 'compute', vendor: 'cisco', status: 'sourced', url: SOURCES.pod2894,
     blurb: 'Eight-GPU HGX server with two AMD EPYC CPUs, up to 3 TB of memory and local NVMe, and BlueField adapters.' },
-  { id: 'c845a', name: 'UCS C845A M8', primitive: 'compute', vendor: 'cisco', status: 'check', url: SOURCES.pods,
-    blurb: 'MGX-based GPU server used in the smaller 2-8-5-200 design.' },
+  { id: 'c845a', name: 'UCS C845A M8', primitive: 'compute', vendor: 'cisco', status: 'sourced', url: SOURCES.c845aDs,
+    blurb: 'MGX-based 4RU GPU server that takes two to eight PCIe GPUs, for fine-tuning, RAG and inference. Part of the AI PODs and the VAST AI OS design.' },
   { id: 'ucs-x', name: 'UCS X-Series', primitive: 'compute', vendor: 'cisco', status: 'sourced', url: SOURCES.flashstackRag,
     blurb: 'Modular compute: the X9508 chassis with X210c M7 compute nodes and X440p PCIe nodes that carry NVIDIA GPUs. The base of the FlexPod and FlashStack RAG designs, and listed on the AI PODs page.' },
   { id: 'intersight', name: 'Intersight', primitive: 'compute', vendor: 'cisco', status: 'sourced', url: SOURCES.pods,
@@ -217,13 +218,13 @@ export const LINKS = [
   L('spectrum-x', 'n9364e', 'composes', 'Cisco Silicon One switches take part in the Spectrum-X platform'),
   L('c885a', 'nvidia-gpu', 'composes', 'Eight HGX GPUs per server'),
   L('ucs-x', 'nvidia-gpu', 'composes', 'X440p PCIe nodes carry the GPUs (two L40S per node in the RAG designs)'),
-  L('c845a', 'nvidia-gpu', 'composes', 'GPU baseboard', 'check'),
+  L('c845a', 'nvidia-gpu', 'composes', 'Two to eight PCIe GPUs'),
   L('c885a', 'bluefield', 'composes', 'BlueField adapters for external links'),
   L('spectrum-x', 'bluefield', 'composes', 'Adapter side of the Spectrum-X platform', 'check'),
 
   // Compute management
   L('intersight', 'c885a', 'manages', 'Server lifecycle and policy'),
-  L('intersight', 'c845a', 'manages', 'Server lifecycle and policy', 'check'),
+  L('intersight', 'c845a', 'manages', 'Server lifecycle and policy'),
   L('intersight', 'ucs-x', 'manages', 'Server lifecycle and policy'),
   L('intersight', 'ucs-fi', 'manages', 'Runs the fabric interconnects in Intersight Managed Mode'),
   L('ucs-fi', 'ucs-x', 'network', 'Connects the chassis to the network'),

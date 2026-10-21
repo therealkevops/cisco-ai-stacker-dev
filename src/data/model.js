@@ -1,11 +1,16 @@
 // Lookups and derived facts over the stack data, shared by the map, the panel and the tests.
 import { PRIMITIVES, NODES, LINKS, LINK_TYPES } from './stack.js';
 import { USE_CASES } from './usecases.js';
+import { PRODUCT_DETAILS, PRIMITIVE_DETAILS } from './details.js';
 
 export const nodeById = new Map(NODES.map((n) => [n.id, n]));
 export const primitiveById = new Map(PRIMITIVES.map((p) => [p.id, p]));
 export const typeById = new Map(LINK_TYPES.map((t) => [t.id, t]));
 export const caseById = new Map(USE_CASES.map((u) => [u.id, u]));
+
+// Fuller descriptions and features, where written. Designs have none: their detail is the bill of materials.
+export const detailsOf = (id) => PRODUCT_DETAILS[id] || null;
+export const primitiveDetailsOf = (id) => PRIMITIVE_DETAILS[id] || null;
 
 export const products = NODES.filter((n) => n.kind !== 'design');
 export const designs = NODES.filter((n) => n.kind === 'design');
