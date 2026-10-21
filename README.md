@@ -17,7 +17,9 @@ A honeycomb map of the Cisco AI stack, in the manner of an ecosystem map. At the
 - **Pick a primitive** to light up everything that provides it, and see which other primitives it integrates with most.
 - **Pick a validated design** for the portfolio lens: the Secure AI Factory, the AI PODs and their 2-8-9-400 and 2-8-5-200 designs, and two Cisco Validated Designs for RAG pipelines (FlexPod with NetApp, FlashStack with Pure Storage). The products the design includes light up, each primitive shows how many of its products are covered ("2 of 6"), and the panel names the primitives the design leaves open. A CVD also shows its bill of materials as published, and lists what it uses that this map does not cover (for example the Webex chat bot or the Milvus vector database).
 
-Filled hexes are Cisco, open hexes are partners, and a dashed outline means the entry is not yet confirmed against a public page. Every selection has its own URL (`#/product/n9364e`, `#/primitive/security`, `#/design/ai-pod`), so the back button works and any view can be shared. Escape clears the selection, and every hex is reachable with the keyboard.
+- **Pick a customer use case** (for example *Enterprise RAG assistant*) to outline the products the scenario needs: a solid outline for required, dashed for recommended. Then **check it against a design**. Every need the design meets gets a tick, every gap a plus, and the panel says in words how many required and recommended needs the design meets and what is still to find. Any design can be checked against any use case, so a design built for something else shows its gaps honestly (the AI POD hardware meets 1 of the 8 things the RAG use case requires).
+
+Filled hexes are Cisco, open hexes are partners, and a dashed outline means the entry is not yet confirmed against a public page. Every selection has its own URL (`#/product/n9364e`, `#/primitive/security`, `#/design/ai-pod`, `#/usecase/enterprise-rag/flashstack-rag`), so the back button works and any view can be shared. Escape clears the selection, and every hex is reachable with the keyboard.
 
 ## Running it
 
@@ -34,9 +36,10 @@ npm run build    # static files in dist/, ready for Vercel or any static host
 [`src/data/stack.js`](src/data/stack.js) holds everything: the six primitives, the products and designs, and the integrations between them, each with a `status` of `sourced` or `check` and a source URL. Integrations are directional (a to b), so "Nexus 9000 contains Nexus 9364E-SG2" reads correctly from both ends.
 
 - To add a product, add an entry to `NODES` with its `primitive`, and at least one `L(...)` line to `LINKS`. A primitive's wedge holds up to nine products.
+- [`src/data/usecases.js`](src/data/usecases.js) holds the customer use cases. Each lists the needs (one product, or several that are alternatives to each other) with a role of `required` or `recommended` and a reason, and the designs that are validated ways to deliver it. A use case is `sourced` when its required needs come from published design guides, or `draft` when they are an editorial reading and need review. Recommended needs are always editorial. A product can appear in only one need per use case.
 - To add a validated design, add a node with `kind: 'design'` and "contains" links to what it includes. A design that publishes a bill of materials can carry `bom` (the lines as published) and `offMap` (what it uses that is not a product on the map). Coverage follows `composes` links downward, so a design that contains another design includes everything inside it. A product family and its models use a separate `models` link, which does not count: a design that uses the Nexus 9000 family has not necessarily used every model.
 
-The tests fail if a link points at a product that does not exist, a product has no source, an integration reads the same from both ends, a primitive's products do not form one connected clump on the map, or a label is too long for its hexagon.
+The tests fail if a use case names a product that does not exist, a design a sourced use case lists fails to meet one of its required needs, a link points at a product that does not exist, a product has no source, an integration reads the same from both ends, a primitive's products do not form one connected clump on the map, or a label is too long for its hexagon.
 
 ### Accuracy
 

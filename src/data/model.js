@@ -1,9 +1,11 @@
 // Lookups and derived facts over the stack data, shared by the map, the panel and the tests.
 import { PRIMITIVES, NODES, LINKS, LINK_TYPES } from './stack.js';
+import { USE_CASES } from './usecases.js';
 
 export const nodeById = new Map(NODES.map((n) => [n.id, n]));
 export const primitiveById = new Map(PRIMITIVES.map((p) => [p.id, p]));
 export const typeById = new Map(LINK_TYPES.map((t) => [t.id, t]));
+export const caseById = new Map(USE_CASES.map((u) => [u.id, u]));
 
 export const products = NODES.filter((n) => n.kind !== 'design');
 export const designs = NODES.filter((n) => n.kind === 'design');
@@ -73,13 +75,50 @@ export function primitiveLinks(primitiveId) {
     .sort((x, y) => y.count - x.count);
 }
 
+// Check a use case against a design. Each need is met if the design includes any one of its products.
+export function assess(useCaseId, designId) {
+  const members = membersOf(designId);
+  return caseById.get(useCaseId).needs.map((need) => {
+    const metBy = need.products.filter((p) => members.has(p));
+    return { need, metBy, met: metBy.length > 0 };
+  });
+}
+
+// How many required and recommended needs an assessment meets.
+export function summarise(assessed) {
+  const count = (role) => {
+    const rows = assessed.filter((a) => a.need.role === role);
+    return { met: rows.filter((r) => r.met).length, total: rows.length };
+  };
+  return { required: count('required'), recommended: count('recommended') };
+}
+
+// Every product a use case names, whichever role.
+export const caseProducts = (useCaseId) => [...new Set(caseById.get(useCaseId).needs.flatMap((n) => n.products))];
+
+// The use cases that name a product, with the role it plays in each.
+export function casesNeeding(productId) {
+  return USE_CASES.flatMap((u) => {
+    const need = u.needs.find((n) => n.products.includes(productId));
+    return need ? [{ useCase: u, role: need.role }] : [];
+  });
+}
+
+// The use cases a design is a validated way to deliver.
+export const casesDelivered = (designId) => USE_CASES.filter((u) => u.designs.includes(designId));
+
 // The address bar drives what is selected: '#/' nothing, '#/product/<id>', '#/design/<id>' (the
-// portfolio lens), or '#/primitive/<id>'.
+// portfolio lens), '#/primitive/<id>', or '#/usecase/<id>' with an optional design to check it
+// against: '#/usecase/<id>/<design>'.
 export function parseRoute(hash) {
-  const [, kind, id] = hash.replace(/^#/, '').split('/');
+  const [, kind, id, extra] = hash.replace(/^#/, '').split('/');
   if (kind === 'product' && nodeById.has(id) && !nodeById.get(id).kind) return { kind: 'product', id };
   if (kind === 'design' && nodeById.has(id) && nodeById.get(id).kind === 'design') return { kind: 'design', id };
   if (kind === 'primitive' && primitiveById.has(id)) return { kind: 'primitive', id };
+  if (kind === 'usecase' && caseById.has(id)) {
+    const design = extra && nodeById.get(extra)?.kind === 'design' ? extra : null;
+    return { kind: 'usecase', id, design };
+  }
   return { kind: null };
 }
 
@@ -87,6 +126,7 @@ export const href = {
   product: (id) => `#/product/${id}`,
   design: (id) => `#/design/${id}`,
   primitive: (id) => `#/primitive/${id}`,
+  usecase: (id, design) => (design ? `#/usecase/${id}/${design}` : `#/usecase/${id}`),
   home: '#/',
 };
 

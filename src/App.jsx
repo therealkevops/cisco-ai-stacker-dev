@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { parseRoute, nodeById, primitiveById } from './data/model.js';
+import { parseRoute, nodeById, primitiveById, caseById } from './data/model.js';
 import HexMap from './map/HexMap.jsx';
 import Panel from './panel/Panel.jsx';
 
 const TITLE = 'The Cisco AI Stack';
 
 function titleFor(route) {
-  const name = route.kind === 'primitive' ? primitiveById.get(route.id).name : route.kind ? nodeById.get(route.id).name : null;
+  const names = { primitive: primitiveById, usecase: caseById };
+  const name = route.kind ? (names[route.kind] || nodeById).get(route.id).name : null;
   return name ? `${name} · ${TITLE}` : TITLE;
 }
 

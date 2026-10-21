@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { PRIMITIVES, NODES } from '../data/stack.js';
-import { nodeById, layoutOrder, linksBetweenProducts, membersOf, coverage, productsIn, href } from '../data/model.js';
+import { nodeById, layoutOrder, linksBetweenProducts, membersOf, coverage, productsIn, assess, caseById, href } from '../data/model.js';
 import { layoutMap, allCells, hexPoints, toPixel, linkPath, wrapLabel, cellKey } from './hexgrid.js';
 
 const SIZE = 52; // centre-to-corner of a cell, in map units
@@ -40,7 +40,7 @@ export default function HexMap({ route }) {
   // What is lit for the current selection: a product and its neighbours, a design's members, or a
   // primitive's own products.
   const view = useMemo(() => {
-    const none = { lit: null, links: [], selected: null, badges: null };
+    const none = { lit: null, links: [], selected: null, badges: null, needs: null };
     if (route.kind === 'product') {
       const links = linksBetweenProducts(route.id);
       const lit = new Set([route.id, ...links.map((l) => (l.a === route.id ? l.b : l.a))]);
@@ -54,6 +54,22 @@ export default function HexMap({ route }) {
       for (const r of rows) if (r.have > 0) lit.add(r.primitive.id);
       return { lit, links: [], selected: null, badges: new Map(rows.map((r) => [r.primitive.id, r])) };
     }
+    if (route.kind === 'usecase') {
+      // Each product a use case names carries its role, and, with a design chosen, whether the design
+      // meets it. Of a set of alternatives, the ones the design does not include fade out.
+      const assessed = route.design ? assess(route.id, route.design) : null;
+      const needs = new Map();
+      caseById.get(route.id).needs.forEach((need, i) => {
+        for (const pid of need.products) {
+          let state = 'open';
+          if (assessed) state = assessed[i].met ? (assessed[i].metBy.includes(pid) ? 'met' : 'alt') : 'gap';
+          needs.set(pid, { role: need.role, state });
+        }
+      });
+      const lit = new Set(needs.keys());
+      for (const pid of needs.keys()) lit.add(nodeById.get(pid).primitive);
+      return { ...none, lit, needs };
+    }
     if (route.kind === 'primitive') {
       const lit = new Set([route.id, ...productsIn(route.id).map((n) => n.id)]);
       return { ...none, lit, selected: route.id };
@@ -64,7 +80,13 @@ export default function HexMap({ route }) {
   const stateOf = (id) => {
     if (!view.lit) return '';
     if (id === view.selected) return 'sel';
+    const need = view.needs?.get(id);
+    if (need?.state === 'alt') return 'dim';
     return view.lit.has(id) ? 'lit' : 'dim';
+  };
+  const needClass = (id) => {
+    const need = view.needs?.get(id);
+    return need && need.state !== 'alt' ? `need ${need.role === 'required' ? 'req' : 'rec'} ${need.state}` : '';
   };
 
   return (
@@ -109,7 +131,7 @@ export default function HexMap({ route }) {
 
       {NODES.filter((n) => !n.kind).map((n) => {
         const c = layout.get(n.id);
-        const cls = ['hex', 'product', `p-${n.primitive}`, n.vendor, n.status === 'check' ? 'unverified' : '', stateOf(n.id)].filter(Boolean).join(' ');
+        const cls = ['hex', 'product', `p-${n.primitive}`, n.vendor, n.status === 'check' ? 'unverified' : '', stateOf(n.id), needClass(n.id)].filter(Boolean).join(' ');
         return (
           <a key={n.id} href={href.product(n.id)} aria-label={`${n.name}, ${n.vendor === 'cisco' ? 'Cisco' : 'partner'}${n.status === 'check' ? ', not yet confirmed' : ''}`}>
             <g className={cls} transform={`translate(${c.x},${c.y})`}>
@@ -159,9 +181,16 @@ export default function HexMap({ route }) {
         })}
         {NODES.filter((n) => !n.kind).map((n) => {
           const c = layout.get(n.id);
+          const need = view.needs?.get(n.id);
           return (
             <g key={n.id} className={`hex product p-${n.primitive} ${stateOf(n.id)}`} transform={`translate(${c.x},${c.y})`}>
               <Label lines={wrapLabel(n.short || n.name, MAX_LABEL)} cls="product-label" />
+              {need && (need.state === 'met' || need.state === 'gap') && (
+                <g className={`need-badge ${need.state}`} transform={`translate(${SIZE * 0.6},${-SIZE * 0.55})`}>
+                  <circle r="9.5" />
+                  <path d={need.state === 'met' ? 'M-4.2,0.4 L-1.2,3.4 L4.4,-3' : 'M-4,0 H4 M0,-4 V4'} />
+                </g>
+              )}
             </g>
           );
         })}
