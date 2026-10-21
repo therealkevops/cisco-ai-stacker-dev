@@ -63,6 +63,25 @@ test('a single AI POD design leaves gaps, which is the point of the lens', () =>
   assert.ok(factory.get('security').have > 0, 'the factory adds security');
 });
 
+test('the two RAG CVDs cover compute, platform, network and data, and leave security and operations open', () => {
+  for (const id of ['flexpod-rag', 'flashstack-rag']) {
+    const rows = new Map(coverage(id).map((r) => [r.primitive.id, r]));
+    for (const p of ['compute', 'platform', 'network', 'data']) assert.ok(rows.get(p).have > 0, `${id}: ${p}`);
+    assert.equal(rows.get('security').have, 0, `${id}: the guide names no security product`);
+    assert.equal(rows.get('ops').have, 0, `${id}: the guide names no observability product`);
+    const members = membersOf(id);
+    assert.ok(members.has('ucs-x') && members.has('ucs-fi') && members.has('nvidia-gpu') && members.has('openshift'));
+    assert.ok(!members.has('n9364e') && !members.has('silicon-one') && !members.has('c885a'), 'the AI POD hardware is not part of these designs');
+  }
+  assert.ok(membersOf('flexpod-rag').has('netapp') && !membersOf('flexpod-rag').has('pure'));
+  assert.ok(membersOf('flashstack-rag').has('pure') && !membersOf('flashstack-rag').has('netapp'));
+});
+
+test('a model of a product family is not pulled in by the family', () => {
+  assert.ok(membersOf('flexpod-rag').has('nexus-9000'));
+  assert.ok(!membersOf('flexpod-rag').has('n9364e'));
+});
+
 test('designsIncluding finds the designs that contain a product', () => {
   const names = designsIncluding('c885a').map((d) => d.id);
   assert.ok(names.includes('pod-2-8-9-400') && names.includes('ai-pod') && names.includes('secure-ai-factory'));

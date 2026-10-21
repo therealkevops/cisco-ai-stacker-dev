@@ -162,6 +162,20 @@ function DesignPanel({ id }) {
       {design.status === 'check' && <p className="note">Not yet confirmed against a public page. Check before quoting.</p>}
       <p className="src"><a href={design.url} target="_blank" rel="noreferrer">Source</a></p>
 
+      {design.bom && (
+        <section aria-labelledby="bom-h">
+          <h2 id="bom-h" className="label">As published</h2>
+          <ul className="bom">
+            {design.bom.map((line) => <li key={line}>{line}</li>)}
+          </ul>
+          {design.offMap.length > 0 && (
+            <p className="offmap">
+              <b>Also in the design, but not on this map:</b> {design.offMap.join('; ')}.
+            </p>
+          )}
+        </section>
+      )}
+
       <section>
         <h2 className="label">Covers {covered.length} of {rows.length} primitives</h2>
         <ul className="cover">

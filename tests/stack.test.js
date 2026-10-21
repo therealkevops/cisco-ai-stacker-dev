@@ -37,6 +37,16 @@ test('there are six primitives, each in its own sector, each with products that 
   }
 });
 
+test('designs that publish a bill of materials list it, and say what they use that is not on the map', () => {
+  const withBom = NODES.filter((n) => n.bom);
+  assert.ok(withBom.length >= 2);
+  for (const n of withBom) {
+    assert.ok(isDesign(n), `${n.id}: only designs carry a bill of materials`);
+    assert.ok(Array.isArray(n.bom) && n.bom.length >= 4 && n.bom.every((l) => typeof l === 'string' && l.length > 5), n.id);
+    assert.ok(Array.isArray(n.offMap) && n.offMap.length >= 1 && n.offMap.every((l) => typeof l === 'string'), `${n.id}: offMap`);
+  }
+});
+
 test('there is at least one validated design to use as a portfolio lens', () => {
   assert.ok(NODES.filter(isDesign).length >= 2);
 });

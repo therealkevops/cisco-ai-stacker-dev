@@ -14,6 +14,8 @@ export const SOURCES = {
   agntcy: 'https://docs.agntcy.org',
   outshift: 'https://outshift.cisco.com/blog/building-the-internet-of-agents-introducing-the-AGNTCY',
   foundation: 'https://www.sdxcentral.com/news/cisco-demos-practical-agentic-ai-for-soc-automation/',
+  flexpodRag: 'https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flexpod_rag_nim.html',
+  flashstackRag: 'https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flashstack_rag_nim.html',
 };
 
 // The primitives: what an AI workload needs, each delivered by a set of products. `sector` is which
@@ -46,11 +48,38 @@ export const NODES = [
   { id: 'pod-2-8-5-200', name: 'AI POD 2-8-5-200', kind: 'design', vendor: 'cisco', status: 'check', url: SOURCES.pods,
     blurb: 'Smaller enterprise design built on UCS C845A servers with a 200G back-end.' },
 
+  { id: 'flexpod-rag', name: 'FlexPod RAG with NVIDIA NIM', kind: 'design', vendor: 'cisco', status: 'sourced', url: SOURCES.flexpodRag,
+    blurb: 'Cisco Validated Design for a retrieval-augmented generation pipeline on FlexPod Datacenter, built on NVIDIA NIM microservices and integrated with a Webex chat bot.',
+    bom: [
+      'UCS X9508 chassis with 6 \u00d7 UCS X210c M7 compute nodes',
+      '2 \u00d7 UCS X440p PCIe nodes, each with 2 \u00d7 NVIDIA L40S GPUs',
+      '2 \u00d7 UCS S9108 fabric interconnects',
+      '2 \u00d7 Nexus 93600CD-GX switches',
+      'NetApp AFF C800 HA pair running ONTAP 9.14.1',
+      'Cisco Intersight (Intersight Managed Mode) with Intersight Assist',
+      'Red Hat OpenShift 4.16 on bare metal',
+      'NVIDIA AI Enterprise, with NIM for LLMs and for text embedding',
+    ],
+    offMap: ['Cisco Webex chat bot', 'Milvus vector database', 'NetApp Trident, DataOps Toolkit and Active IQ Unified Manager'] },
+  { id: 'flashstack-rag', name: 'FlashStack RAG with NVIDIA NIM', kind: 'design', vendor: 'cisco', status: 'sourced', url: SOURCES.flashstackRag,
+    blurb: 'Cisco Validated Design for an enterprise RAG pipeline on FlashStack, using the NVIDIA AI Blueprint for RAG and NIM microservices, to make deployment faster and less complex.',
+    bom: [
+      'UCS X9508 chassis with 6 \u00d7 UCS X210c M7 compute nodes',
+      '2 \u00d7 UCS X440p PCIe nodes, each with 2 \u00d7 NVIDIA L40S GPUs',
+      'UCS 6536 fabric interconnects',
+      'Nexus 93600CD-GX switches',
+      'Pure Storage FlashArray//XL170 and FlashBlade//S200',
+      'Cisco Intersight (Intersight Managed Mode) with Intersight Assist',
+      'Red Hat OpenShift 4.17 on bare metal',
+      'NVIDIA AI Enterprise, with NIM for LLMs, text embedding and reranking, the NIM Operator and the AI Blueprint for RAG',
+    ],
+    offMap: ['Cisco Webex chat bot (an example integration)', 'Milvus vector database', 'Portworx Enterprise', 'Cisco MDS (named as a FlashStack component, not detailed)'] },
+
   // Silicon and accelerators
   { id: 'silicon-one', name: 'Silicon One G200', primitive: 'network', vendor: 'cisco', status: 'check', url: SOURCES.pod2894,
     blurb: 'Cisco\'s own switch silicon. Sources disagree on exactly which ASIC sits in the 9364E-SG2, so confirm before quoting it.' },
-  { id: 'nvidia-gpu', name: 'NVIDIA HGX GPUs', primitive: 'compute', vendor: 'partner', status: 'sourced', url: SOURCES.pod2894,
-    blurb: 'Eight-GPU HGX baseboards (H200 in the C885A guide). The accelerator everything else in the stack exists to feed.' },
+  { id: 'nvidia-gpu', name: 'NVIDIA GPUs', primitive: 'compute', vendor: 'partner', status: 'sourced', url: SOURCES.pod2894,
+    blurb: 'The accelerator everything else in the stack exists to feed: eight-GPU HGX baseboards in the C885A (H200 in its guide), and L40S GPUs in the X440p PCIe nodes of UCS X-Series.' },
   { id: 'bluefield', name: 'NVIDIA BlueField DPU', primitive: 'compute', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
     blurb: 'Network adapter and DPU. Carries the external links on the C885A and hosts the Hybrid Mesh Firewall enforcement point.' },
   { id: 'spectrum-x', name: 'NVIDIA Spectrum-X', primitive: 'network', vendor: 'partner', status: 'sourced', url: SOURCES.pod2894,
@@ -61,8 +90,8 @@ export const NODES = [
     blurb: 'Eight-GPU HGX server with two AMD EPYC CPUs, up to 3 TB of memory and local NVMe, and BlueField adapters.' },
   { id: 'c845a', name: 'UCS C845A M8', primitive: 'compute', vendor: 'cisco', status: 'check', url: SOURCES.pods,
     blurb: 'MGX-based GPU server used in the smaller 2-8-5-200 design.' },
-  { id: 'ucs-x', name: 'UCS X-Series', primitive: 'compute', vendor: 'cisco', status: 'sourced', url: SOURCES.pods,
-    blurb: 'Modular compute that the AI PODs page lists alongside the rack servers.' },
+  { id: 'ucs-x', name: 'UCS X-Series', primitive: 'compute', vendor: 'cisco', status: 'sourced', url: SOURCES.flashstackRag,
+    blurb: 'Modular compute: the X9508 chassis with X210c M7 compute nodes and X440p PCIe nodes that carry NVIDIA GPUs. The base of the FlexPod and FlashStack RAG designs, and listed on the AI PODs page.' },
   { id: 'intersight', name: 'Intersight', primitive: 'compute', vendor: 'cisco', status: 'sourced', url: SOURCES.pods,
     blurb: 'SaaS lifecycle and policy management for UCS servers, and the management plane behind the AI PODs.' },
 
@@ -73,6 +102,8 @@ export const NODES = [
     blurb: 'The data center switching family the AI PODs are built on.' },
   { id: 'hyperfabric', name: 'Nexus Hyperfabric AI', primitive: 'network', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
     blurb: 'Cloud-managed fabric delivered as a service. The cloud-managed alternative for an AI POD.' },
+  { id: 'ucs-fi', name: 'UCS Fabric Interconnects', primitive: 'network', vendor: 'cisco', status: 'sourced', url: SOURCES.flashstackRag,
+    blurb: 'Connect the UCS X-Series chassis to the network and run it in Intersight Managed Mode: UCS 6536 in the FlashStack design, UCS S9108 in the FlexPod design.' },
   { id: 'nexus-dashboard', name: 'Nexus Dashboard', primitive: 'network', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
     blurb: 'On-premises controller and operations console for Nexus fabrics. Manages the on-prem AI POD.' },
 
@@ -126,9 +157,12 @@ export const NODES = [
 ];
 
 // Integration types. A link is directional (a to b), and `from` / `to` are how each end reads: for
-// a composes link, a "Contains" b and b "Is part of" a.
+// a composes link, a "Contains" b and b "Is part of" a. Only `composes` counts towards what a
+// validated design includes; `models` (a product family and one of its models) does not, because a
+// design that uses the family has not necessarily used every model.
 export const LINK_TYPES = [
   { id: 'composes', name: 'Contains', from: 'Contains', to: 'Is part of' },
+  { id: 'models', name: 'Includes the model', from: 'Includes the model', to: 'Is a model of' },
   { id: 'runs', name: 'Runs on', from: 'Runs on', to: 'Underpins' },
   { id: 'network', name: 'Carries traffic', from: 'Carries traffic for', to: 'Has traffic carried by' },
   { id: 'manages', name: 'Manages', from: 'Manages', to: 'Is managed by' },
@@ -142,6 +176,20 @@ const L = (a, b, type, label, status = 'sourced') => ({ a, b, type, label, statu
 
 export const LINKS = [
   // Designs
+  L('flexpod-rag', 'ucs-x', 'composes', 'Compute: X9508 chassis, X210c M7 nodes and X440p GPU nodes'),
+  L('flexpod-rag', 'ucs-fi', 'composes', 'Connects the chassis to the network'),
+  L('flexpod-rag', 'nexus-9000', 'composes', 'Nexus 93600CD-GX switching'),
+  L('flexpod-rag', 'intersight', 'composes', 'Infrastructure management, in Intersight Managed Mode'),
+  L('flexpod-rag', 'openshift', 'composes', 'Kubernetes platform, on bare metal'),
+  L('flexpod-rag', 'nvidia-ai-enterprise', 'composes', 'NVIDIA AI Enterprise with NIM microservices'),
+  L('flexpod-rag', 'netapp', 'composes', 'Storage: NetApp AFF C800'),
+  L('flashstack-rag', 'ucs-x', 'composes', 'Compute: X9508 chassis, X210c M7 nodes and X440p GPU nodes'),
+  L('flashstack-rag', 'ucs-fi', 'composes', 'Connects the chassis to the network'),
+  L('flashstack-rag', 'nexus-9000', 'composes', 'Nexus 93600CD-GX switching'),
+  L('flashstack-rag', 'intersight', 'composes', 'Infrastructure management, in Intersight Managed Mode'),
+  L('flashstack-rag', 'openshift', 'composes', 'Kubernetes platform, on bare metal'),
+  L('flashstack-rag', 'nvidia-ai-enterprise', 'composes', 'NVIDIA AI Enterprise with NIM microservices'),
+  L('flashstack-rag', 'pure', 'composes', 'Storage: Pure Storage FlashArray and FlashBlade'),
   L('secure-ai-factory', 'ai-pod', 'composes', 'AI PODs are the pre-validated infrastructure of the factory'),
   L('ai-pod', 'pod-2-8-9-400', 'composes', 'One of the published AI POD designs'),
   L('ai-pod', 'pod-2-8-5-200', 'composes', 'One of the published AI POD designs', 'check'),
@@ -168,6 +216,7 @@ export const LINKS = [
   L('n9364e', 'silicon-one', 'composes', 'Switch ASIC', 'check'),
   L('spectrum-x', 'n9364e', 'composes', 'Cisco Silicon One switches take part in the Spectrum-X platform'),
   L('c885a', 'nvidia-gpu', 'composes', 'Eight HGX GPUs per server'),
+  L('ucs-x', 'nvidia-gpu', 'composes', 'X440p PCIe nodes carry the GPUs (two L40S per node in the RAG designs)'),
   L('c845a', 'nvidia-gpu', 'composes', 'GPU baseboard', 'check'),
   L('c885a', 'bluefield', 'composes', 'BlueField adapters for external links'),
   L('spectrum-x', 'bluefield', 'composes', 'Adapter side of the Spectrum-X platform', 'check'),
@@ -176,9 +225,12 @@ export const LINKS = [
   L('intersight', 'c885a', 'manages', 'Server lifecycle and policy'),
   L('intersight', 'c845a', 'manages', 'Server lifecycle and policy', 'check'),
   L('intersight', 'ucs-x', 'manages', 'Server lifecycle and policy'),
+  L('intersight', 'ucs-fi', 'manages', 'Runs the fabric interconnects in Intersight Managed Mode'),
+  L('ucs-fi', 'ucs-x', 'network', 'Connects the chassis to the network'),
+  L('nexus-9000', 'ucs-fi', 'network', 'Upstream switching for the fabric interconnects', 'check'),
 
   // Network
-  L('nexus-9000', 'n9364e', 'composes', 'The 9364E-SG2 is a Nexus 9000 model'),
+  L('nexus-9000', 'n9364e', 'models', 'The 9364E-SG2 is a Nexus 9000 model'),
   L('n9364e', 'c885a', 'network', 'Lossless RoCE back-end fabric and front-end network'),
   L('n9364e', 'bluefield', 'network', 'Terminates on the server adapters'),
   L('nexus-dashboard', 'n9364e', 'manages', 'Fabric provisioning and operations'),
