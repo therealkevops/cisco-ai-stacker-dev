@@ -61,21 +61,33 @@ export function hexPoints(x, y, size) {
   });
 }
 
-// A curve between two cells for a link, starting and ending just inside the hexagon edges, bowed
-// sideways so it does not run straight through the cells between. Returns the path and the end
-// points (the arrowhead sits on the second).
+// The line for a link between two cells. It starts at `from` and ends at `to`, so an arrowhead at the
+// end points the way the relationship runs. Returns the SVG path and its two end points.
+//
+// Between distant cells the line is trimmed back from each hexagon so it clears the labels, and bowed
+// sideways so it does not run straight through the cells between. Between neighbouring cells there is
+// no room to trim (the centres are under two cell-radii apart), so the line becomes a short straight
+// connector centred on the shared edge, long enough to carry its pattern and arrowhead.
 export function linkPath(from, to, size, bow = 0.14) {
   const dx = to.x - from.x;
   const dy = to.y - from.y;
   const len = Math.hypot(dx, dy) || 1;
   const ux = dx / len;
   const uy = dy / len;
+  const f = (n) => Math.round(n * 10) / 10;
+  if (len < size * 2.2) {
+    const half = size * 0.34;
+    const mx = (from.x + to.x) / 2;
+    const my = (from.y + to.y) / 2;
+    const a = { x: mx - ux * half, y: my - uy * half };
+    const b = { x: mx + ux * half, y: my + uy * half };
+    return { d: `M${f(a.x)},${f(a.y)} L${f(b.x)},${f(b.y)}`, a, b };
+  }
   const inset = size * 0.82;
   const a = { x: from.x + ux * inset, y: from.y + uy * inset };
   const b = { x: to.x - ux * inset, y: to.y - uy * inset };
   const mx = (a.x + b.x) / 2 - uy * len * bow;
   const my = (a.y + b.y) / 2 + ux * len * bow;
-  const f = (n) => Math.round(n * 10) / 10;
   return { d: `M${f(a.x)},${f(a.y)} Q${f(mx)},${f(my)} ${f(b.x)},${f(b.y)}`, a, b };
 }
 

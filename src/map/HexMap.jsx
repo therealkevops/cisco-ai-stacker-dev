@@ -97,11 +97,12 @@ export default function HexMap({ route, hoverId }) {
       aria-label="Honeycomb map of the Cisco AI stack. The centre is the AI workload, the ring around it is the six primitives, and each primitive's products sit beside it."
     >
       <defs>
-        <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+        {/* Markers keep a fixed size whatever the line weight, so a heavy style never gets a huge arrowhead. */}
+        <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="13" markerHeight="13" orient="auto">
           <path d="M1,1 L9,5 L1,9" fill="none" stroke="var(--accent)" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
         </marker>
-        <marker id="whole" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-          <circle cx="5" cy="5" r="3.2" fill="var(--paper)" stroke="var(--accent)" strokeWidth="1.6" />
+        <marker id="whole" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto">
+          <circle cx="5" cy="5" r="3.3" fill="var(--paper)" stroke="var(--accent)" strokeWidth="1.6" />
         </marker>
       </defs>
 

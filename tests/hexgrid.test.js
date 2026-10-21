@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DIRS, sectorCells, allCells, hexDistance, layoutMap, hexPoints, linkPath, wrapLabel, toPixel, cellKey } from '../src/map/hexgrid.js';
 import { PRIMITIVES } from '../src/data/stack.js';
-import { products, layoutOrder } from '../src/data/model.js';
+import { products, layoutOrder, productLinks } from '../src/data/model.js';
 
 const ordered = layoutOrder();
 
@@ -102,6 +102,37 @@ test('a link path starts and ends inside the two hexagons, not at their centres'
   const b = { x: 300, y: 0 };
   const { a: s, b: e } = linkPath(a, b, 50);
   assert.ok(s.x > 0 && s.x < 50 && e.x < 300 && e.x > 250);
+});
+
+const pathLength = (a, b) => Math.hypot(b.x - a.x, b.y - a.y);
+
+test('every connection on the real map draws a line long enough to see, even between neighbours', () => {
+  const size = 52;
+  const map = layoutMap(PRIMITIVES, ordered, size);
+  let neighbours = 0;
+  for (const l of productLinks) {
+    const from = map.get(l.a);
+    const to = map.get(l.b);
+    const { a, b } = linkPath(from, to, size);
+    if (hexDistance([from.q, from.r], [to.q, to.r]) === 1) neighbours++;
+    assert.ok(pathLength(a, b) >= 30, `${l.a} - ${l.b}: the line is only ${pathLength(a, b).toFixed(1)}px long`);
+  }
+  assert.ok(neighbours > 0, 'the test should exercise neighbouring hexes');
+});
+
+test('a line between neighbours is centred on their shared edge and runs straight from a to b', () => {
+  const size = 52;
+  const from = { x: 0, y: 0 };
+  const to = { x: Math.sqrt(3) * size, y: 0 };
+  const { a, b, d } = linkPath(from, to, size);
+  assert.ok(Math.abs((a.x + b.x) / 2 - to.x / 2) < 1e-6 && Math.abs((a.y + b.y) / 2) < 1e-6, 'centred on the shared edge');
+  assert.ok(a.x < b.x, 'runs from a towards b');
+  assert.ok(!d.includes('Q'), 'a short connector is straight, not bowed');
+});
+
+test('a longer line is still trimmed back from both hexagons so it clears their labels', () => {
+  const { a, b } = linkPath({ x: 0, y: 0 }, { x: 300, y: 0 }, 52);
+  assert.ok(a.x > 30 && b.x < 270);
 });
 
 test('labels wrap on word boundaries and never split a word', () => {
