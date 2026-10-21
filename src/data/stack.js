@@ -15,6 +15,7 @@ export const SOURCES = {
   outshift: 'https://outshift.cisco.com/blog/building-the-internet-of-agents-introducing-the-AGNTCY',
   foundation: 'https://www.sdxcentral.com/news/cisco-demos-practical-agentic-ai-for-soc-automation/',
   flexpodRag: 'https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flexpod_rag_nim.html',
+  isovalentBlog: 'https://blogs.cisco.com/datacenter/extending-infrastructure-fabric-the-journey-to-cloud-native-isovalent-networking',
   c845aDs: 'https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/ucs-c845a-m8-rack-server-ds.html',
   flashstackRag: 'https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flashstack_rag_nim.html',
 };
@@ -23,13 +24,13 @@ export const SOURCES = {
 // of the six directions around the centre of the map it sits in (0 east, then clockwise).
 export const PRIMITIVES = [
   { id: 'platform', name: 'Platform and runtime', label: 'Platform', sector: 4,
-    summary: 'Kubernetes, the GPU software stack and cluster networking that models and agents run on.' },
+    summary: 'The Kubernetes platforms, and the AI software on them, that models and agents run on: model serving and inference microservices.' },
   { id: 'ops', name: 'Operations and agents', label: 'Operations', sector: 5,
     summary: 'Observability, AI-driven operations and the open protocols agents use to find and talk to each other.' },
   { id: 'security', name: 'Security', label: 'Security', sector: 0,
     summary: 'Protects models, agents, workloads and the network, from runtime enforcement to the SOC.' },
   { id: 'network', name: 'Network fabric', label: 'Network', sector: 1,
-    summary: 'Lossless Ethernet for GPU-to-GPU traffic and the front-end network, with the controllers that manage it.' },
+    summary: 'Lossless Ethernet for GPU-to-GPU traffic and the front-end network, the controllers that manage it, and the networking inside Kubernetes clusters.' },
   { id: 'compute', name: 'Compute and accelerators', label: 'Compute', sector: 2,
     summary: 'GPU servers, the accelerators and DPUs inside them, and the management plane that provisions and monitors them.' },
   { id: 'data', name: 'Data and storage', label: 'Data', sector: 3,
@@ -111,14 +112,14 @@ export const NODES = [
   // Data and storage
   { id: 'netapp', name: 'NetApp', primitive: 'data', vendor: 'partner', status: 'sourced', url: SOURCES.netapp,
     blurb: 'Published a validated design for the Cisco AI POD (NVA-1186).' },
-  { id: 'pure', name: 'Pure Storage', primitive: 'data', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
-    blurb: 'Storage partner for the Secure AI Factory.' },
+  { id: 'pure', name: 'Everpure (Pure Storage)', short: 'Everpure', primitive: 'data', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
+    blurb: 'Formerly Pure Storage, renamed in 2026. Storage partner for the Secure AI Factory, and the storage in the FlashStack designs.' },
   { id: 'vast', name: 'VAST Data', primitive: 'data', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
     blurb: 'Storage partner for the Secure AI Factory.' },
   { id: 'hitachi', name: 'Hitachi Vantara', primitive: 'data', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
     blurb: 'Storage partner for the Secure AI Factory.' },
-  { id: 'nutanix', name: 'Nutanix', primitive: 'data', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
-    blurb: 'Storage partner, and its NKP is one of the supported Kubernetes platforms.' },
+  { id: 'nutanix', name: 'Nutanix', primitive: 'platform', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
+    blurb: 'Kubernetes platform (NKP) and AI services (Nutanix Enterprise AI) for the stack, alongside OpenShift, and also a storage partner.' },
 
   // Platform
   { id: 'nvidia-ai-enterprise', name: 'NVIDIA AI Enterprise', primitive: 'platform', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
@@ -127,8 +128,8 @@ export const NODES = [
     blurb: 'Kubernetes option for the stack. Red Hat AI Factory is also supported.' },
   { id: 'kubernetes', name: 'Kubernetes', primitive: 'platform', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
     blurb: 'Upstream open-source Kubernetes is a supported option beside OpenShift and Nutanix NKP.' },
-  { id: 'isovalent', name: 'Isovalent', primitive: 'platform', vendor: 'cisco', status: 'check', url: SOURCES.factory,
-    blurb: 'Cilium-based networking and observability for Kubernetes clusters.' },
+  { id: 'isovalent', name: 'Isovalent Networking', primitive: 'network', vendor: 'cisco', status: 'sourced', url: SOURCES.isovalentBlog,
+    blurb: 'Cilium-based cloud-native networking, security and observability for Kubernetes: the software layer that extends the data center network into the cluster.' },
 
   // Security
   { id: 'ai-defense', name: 'Cisco AI Defense', primitive: 'security', vendor: 'cisco', status: 'sourced', url: SOURCES.factory,
@@ -200,14 +201,16 @@ export const LINKS = [
   L('pod-2-8-5-200', 'nexus-9000', 'composes', 'Switching for the design', 'check'),
   L('secure-ai-factory', 'ai-defense', 'composes', 'Security pillar'),
   L('secure-ai-factory', 'hybrid-mesh-fw', 'composes', 'Security pillar'),
-  L('secure-ai-factory', 'isovalent-runtime', 'composes', 'Security pillar'),
+  L('secure-ai-factory', 'isovalent-runtime', 'composes', 'Listed on an earlier version of the Secure AI Factory page; not on the current one', 'check'),
   L('secure-ai-factory', 'splunk-es', 'composes', 'Security pillar'),
   L('secure-ai-factory', 'splunk-obs', 'composes', 'Observability pillar'),
   L('secure-ai-factory', 'nvidia-ai-enterprise', 'composes', 'Software pillar'),
-  L('secure-ai-factory', 'pure', 'composes', 'Storage partner'),
+  L('secure-ai-factory', 'pure', 'composes', 'Storage partner, listed as Everpure on the current page'),
   L('secure-ai-factory', 'vast', 'composes', 'Storage partner'),
   L('secure-ai-factory', 'hitachi', 'composes', 'Storage partner'),
-  L('secure-ai-factory', 'nutanix', 'composes', 'Storage and Kubernetes partner'),
+  L('secure-ai-factory', 'nutanix', 'composes', 'Kubernetes platform, AI software and storage partner'),
+  L('ai-pod', 'ai-defense', 'composes', 'Listed among the AI PODs\' security and observability building blocks'),
+  L('ai-pod', 'isovalent', 'composes', 'Listed among the AI PODs\' security and observability building blocks'),
   L('ai-pod', 'netapp', 'composes', 'Validated storage design (NVA-1186)'),
   L('nexus-dashboard', 'ai-pod', 'manages', 'Manages the on-premises AI POD'),
   L('hyperfabric', 'ai-pod', 'manages', 'The cloud-managed alternative to Nexus Dashboard'),
@@ -243,7 +246,7 @@ export const LINKS = [
   L('nvidia-ai-enterprise', 'openshift', 'runs', 'Runs on Kubernetes'),
   L('nvidia-ai-enterprise', 'kubernetes', 'runs', 'Runs on Kubernetes'),
   L('nvidia-ai-enterprise', 'nutanix', 'runs', 'Runs on Nutanix NKP'),
-  L('isovalent', 'kubernetes', 'runs', 'Cilium runs in the cluster as its network layer', 'check'),
+  L('isovalent', 'kubernetes', 'runs', 'Cilium runs in the cluster as its network layer'),
   L('isovalent', 'isovalent-runtime', 'composes', 'Runtime security is part of Isovalent'),
 
   // Security

@@ -4,12 +4,12 @@ A honeycomb map of the Cisco AI stack, in the manner of an ecosystem map. At the
 
 | Primitive | Examples |
 |---|---|
-| Platform and runtime | NVIDIA AI Enterprise, OpenShift, Kubernetes, Isovalent |
+| Platform and runtime | NVIDIA AI Enterprise, Red Hat OpenShift, Nutanix, Kubernetes |
 | Operations and agents | Splunk Observability, AI Canvas, ThousandEyes, AGNTCY |
 | Security | AI Defense, Hybrid Mesh Firewall, Isovalent Runtime Security, Splunk ES, XDR |
-| Network fabric | Nexus 9364E-SG2, Nexus 9000, UCS Fabric Interconnects, Hyperfabric AI, Nexus Dashboard |
+| Network fabric | Nexus 9364E-SG2, Nexus 9000, UCS Fabric Interconnects, Hyperfabric AI, Nexus Dashboard, Isovalent Networking |
 | Compute and accelerators | UCS C885A M8, C845A M8, UCS X-Series, Intersight, NVIDIA GPUs, BlueField |
-| Data and storage | NetApp, Pure Storage, VAST Data, Hitachi Vantara, Nutanix |
+| Data and storage | NetApp, Everpure (Pure Storage), VAST Data, Hitachi Vantara |
 
 ## Using it
 

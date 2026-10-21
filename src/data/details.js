@@ -241,15 +241,20 @@ export const PRODUCT_DETAILS = {
   },
   isovalent: {
     about:
-      'The enterprise distribution of Cilium, Hubble and Tetragon from Isovalent, now part of Cisco: networking, security and observability for Kubernetes clusters, built on eBPF.',
+      'The cloud-native networking layer for Kubernetes, from Isovalent (now part of Cisco): Cilium, built on eBPF. Cisco describes it as the software layer that extends its data center network into the cluster, with security and observability on top.',
     features: [
-      f('Cilium networking and policy', 'Network policy that is DNS-aware and layer-7 aware, with deny rules, for micro-segmentation.'),
-      f('Hubble observability', 'Visibility at layers 3, 4 and 7 across nodes, clusters and multi-cluster setups, with automatic service-dependency maps.'),
-      f('Enterprise additions', 'A policy editor driven by live traffic, OIDC-based RBAC, SIEM integrations such as Splunk and Elastic, and historical data for root-cause analysis.'),
-      f('Tetragon for runtime security', 'Included in the enterprise distribution; see Isovalent Runtime Security.'),
+      f('Cilium container networking', 'Networking built into the Linux kernel with eBPF; Cisco says it supports multi-tenant security and high performance for AI workloads.'),
+      f('Extends the data center network', 'Nexus provides the underlay and Isovalent works in the software layers above it, with the same policy-driven, infrastructure-as-code approach.'),
+      f('Policy and segmentation', 'DNS-aware and layer-7 network policy, with deny rules, for micro-segmentation between workloads.'),
+      f('Hubble observability', 'Visibility at layers 3, 4 and 7, with automatic service-dependency maps, across nodes, clusters and multi-cluster setups.'),
+      f('Enterprise additions', 'A policy editor driven by live traffic, OIDC-based RBAC, and SIEM integrations such as Splunk and Elastic.'),
     ],
-    caveat: 'Isovalent\'s place in the Cisco AI designs is not confirmed against a public design guide, and the sources for these features are Isovalent\'s own and partner pages.',
-    refs: [['Isovalent Enterprise for Cilium brief', 'https://isovalent.com/briefs/isovalent-cilium-enterprise/'], ['Hubble', 'https://isovalent.com/projects/hubble']],
+    caveat: 'Cisco\'s blog describes the layering over Nexus but not a specific integration mechanism. Isovalent is not on the current Secure AI Factory page; its place in the AI designs rests on the AI PODs page, which lists it among the security and observability building blocks.',
+    refs: [
+      ['Extending the infrastructure fabric: cloud-native Isovalent networking', 'https://blogs.cisco.com/datacenter/extending-infrastructure-fabric-the-journey-to-cloud-native-isovalent-networking'],
+      ['Isovalent Enterprise for Cilium brief', 'https://isovalent.com/briefs/isovalent-cilium-enterprise/'],
+      ['Hubble', 'https://isovalent.com/projects/hubble'],
+    ],
   },
 
   // ---- Security ----
@@ -414,7 +419,7 @@ export const PRODUCT_DETAILS = {
   },
   pure: {
     about:
-      'The storage half of FlashStack, Cisco and Pure Storage\'s converged design. The FlashStack RAG guide uses FlashArray for block storage and FlashBlade for object storage, with Portworx for Kubernetes.',
+      'The storage half of FlashStack, Cisco\'s converged design with the company formerly called Pure Storage, which renamed itself Everpure in 2026. The FlashStack RAG guide uses FlashArray for block storage and FlashBlade for object storage, with Portworx for Kubernetes.',
     features: [
       f('FlashArray for persistent volumes', 'A FlashArray//XL170 acts as the Portworx cloud storage provider over iSCSI.'),
       f('FlashBlade for object', 'A FlashBlade//S200 provides an S3-compatible object store for the Milvus vector database.'),
@@ -422,7 +427,7 @@ export const PRODUCT_DETAILS = {
       f('ActiveCluster and multi-tenancy', 'FlashArray supports synchronous replication and secure multi-tenancy with Portworx.'),
       f('Non-disruptive FlashBlade//S upgrades', 'Separates compute from capacity, and upgrades storage, compute and networking without downtime.'),
     ],
-    caveat: 'Pure\'s own product pages could not be read, and one of the sources dates from 2023. Check Pure for current features.',
+    caveat: 'Pure Storage renamed itself Everpure in 2026. Cisco\'s current Secure AI Factory page uses the new name, while the FlashStack guides still say Pure Storage. Its own product pages could not be read and one source dates from 2023, so check the vendor for current features.',
     refs: [['FlashStack RAG Cisco Validated Design', 'https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flashstack_rag_nim.html'], ['Portworx with Pure Storage', 'https://docs.portworx.com/portworx-enterprise/3.4/platform/pure-storage'], ['FlashBlade//S announcement', 'https://itwire.com/business-it-news/storage/pure-storage-unveils-flashblade-s-%E2%80%93-and-more']],
   },
   vast: {
@@ -451,15 +456,19 @@ export const PRODUCT_DETAILS = {
   },
   nutanix: {
     about:
-      'A storage and Kubernetes partner. Cisco and Nutanix describe AI PODs with Nutanix: Cisco UCS and Nexus with Nutanix Kubernetes Platform, Enterprise AI and Unified Storage.',
+      'Nutanix supplies a Kubernetes platform (NKP) and AI services (Nutanix Enterprise AI) for the Secure AI Factory, in the same slot as Red Hat OpenShift, and is also a storage partner through Nutanix Unified Storage. Cisco and Nutanix describe AI PODs with Nutanix on UCS and Nexus.',
     features: [
-      f('Nutanix Kubernetes Platform (NKP)', 'CNCF-certified, and one of the Kubernetes platforms the Secure AI Factory supports alongside OpenShift and upstream.'),
+      f('Nutanix Kubernetes Platform (NKP)', 'CNCF-certified, and listed by Cisco among the Kubernetes platforms alongside OpenShift and upstream Kubernetes; Cisco describes it as a secure, multi-tenant layer for running AI workloads.'),
+      f('Nutanix Enterprise AI', 'Handles model and endpoint lifecycle management and enterprise security for inference, and is listed by Cisco under AI software.'),
       f('Nutanix Unified Storage', 'Release 5.3 is available now, with multi-tenant object scaling for large AI data lakes, and enterprise-level NVIDIA-Certified Storage validation.'),
-      f('Nutanix Enterprise AI', 'Handles AI model inference and management, per Cisco\'s collateral.'),
-      f('Cisco AI PODs with Nutanix', 'Cisco UCS GPU-dense compute and Nexus AI networking with NKP and Nutanix Enterprise AI.'),
+      f('Cisco AI PODs with Nutanix', 'Cisco UCS GPU-dense compute and Nexus AI networking with NKP and Nutanix Enterprise AI, so compute, networking and storage run as one operational model.'),
     ],
-    caveat: 'Several Nutanix items are roadmap: NKP Metal (bare-metal Kubernetes) is in early access with general availability planned for the second half of 2026, and the agentic AI solution is in early access. Cisco\'s "AI PODs with Nutanix" sheet could not be opened, so its description rests on a search summary of it.',
-    refs: [['Nutanix delivers a complete platform for the agentic AI era', 'https://www.hpcwire.com/off-the-wire/nutanix-delivers-complete-platform-for-the-agentic-ai-era/'], ['Cisco AI PODs with Nutanix at a glance', 'https://www.cisco.com/c/en/us/products/collateral/hyperconverged-infrastructure/compute-hyperconverged/ai-pods-with-nutanix-aag.pdf']],
+    caveat: 'Cisco\'s page lists Nutanix in three places: Kubernetes platform, AI software and storage. The map places it with the platforms, because that is its larger role. Several items are roadmap: NKP Metal (bare-metal Kubernetes) is in early access with general availability planned for the second half of 2026, and the agentic AI solution is in early access. Cisco\'s "AI PODs with Nutanix" sheet could not be opened, so its description rests on a search summary of it.',
+    refs: [
+      ['Cisco Secure AI Factory with NVIDIA', 'https://www.cisco.com/site/us/en/solutions/artificial-intelligence/secure-ai-factory/index.html'],
+      ['Cisco AI PODs with Nutanix Agentic AI at a glance', 'https://www.cisco.com/c/en/us/products/collateral/hyperconverged-infrastructure/compute-hyperconverged/ai-pods-with-nutanix-aag.html'],
+      ['Nutanix delivers a complete platform for the agentic AI era', 'https://www.hpcwire.com/off-the-wire/nutanix-delivers-complete-platform-for-the-agentic-ai-era/'],
+    ],
   },
 };
 
@@ -475,12 +484,12 @@ export const PRIMITIVE_DETAILS = {
     ],
   },
   network: {
-    why: 'Distributed AI jobs move bursts of data between GPUs in lockstep, and a few very large flows can collide on one link. One dropped or delayed packet can stall a whole job, so these fabrics are built to be lossless and to spread traffic carefully. Cisco\'s designs keep a back-end network for GPU-to-GPU traffic apart from the front-end network for storage and users.',
+    why: 'Distributed AI jobs move bursts of data between GPUs in lockstep, and a few very large flows can collide on one link. One dropped or delayed packet can stall a whole job, so these fabrics are built to be lossless and to spread traffic carefully. Cisco\'s designs keep a back-end network for GPU-to-GPU traffic apart from the front-end network for storage and users, and extend the network into Kubernetes.',
     lookFor: [
       f('Lossless RoCE', 'Priority Flow Control and ECN keep RDMA traffic from dropping frames under load.'),
       f('Smarter load balancing', 'Moving beyond fixed hashing, such as dynamic or per-packet balancing, so large flows do not pile up.'),
       f('Congestion telemetry', 'Being able to see ECN, PFC and queue behaviour, and tie it to jobs.'),
-      f('Speed and optics', 'Port speeds of 400G and 800G, and the optics to match, decide how many GPUs one switch can serve.'),
+      f('Networking inside the cluster', 'Pods need networking and policy too: a cluster network layer that joins the fabric and enforces segmentation between workloads.'),
     ],
   },
   data: {
@@ -493,11 +502,11 @@ export const PRIMITIVE_DETAILS = {
     ],
   },
   platform: {
-    why: 'The platform is what turns a rack of GPUs into something teams can use: it schedules workloads onto GPUs, packages models as services, and keeps the software stack supported. Most of Cisco\'s designs run it on Kubernetes.',
+    why: 'The platform is what turns a rack of GPUs into something teams can use: it schedules workloads onto GPUs, packages models as services, and keeps the software stack supported. Cisco\'s designs run it on Kubernetes, from Red Hat OpenShift, Nutanix NKP or upstream, with NVIDIA\'s AI software on top.',
     lookFor: [
       f('GPU scheduling', 'Device plugins, labels and affinity to put each workload on the right GPU.'),
       f('Supported inference services', 'Packaged, patched model-serving components, not hand-built ones.'),
-      f('Cluster networking and policy', 'Network policy and visibility inside the cluster.'),
+      f('A platform your team can run', 'OpenShift, Nutanix NKP and upstream Kubernetes are all supported, so the question is which one your team can operate and who patches it.'),
       f('Lifecycle and support', 'Who patches the stack, and for how long.'),
     ],
   },
