@@ -23,10 +23,12 @@ const bounds = (() => {
 })();
 
 function Label({ lines, cls, dy = 0 }) {
-  const lh = cls === 'primitive-label' ? 20 : 15;
+  const lh = cls === 'primitive-label' ? 20 : 14;
   const start = -((lines.length - 1) * lh) / 2 + dy;
+  // A single long word cannot wrap, so the label shrinks a little to stay inside its hexagon.
+  const long = Math.max(...lines.map((l) => l.length)) >= 12;
   return (
-    <text className={cls} textAnchor="middle">
+    <text className={cls} textAnchor="middle" style={long ? { fontSize: '10px' } : undefined}>
       {lines.map((line, i) => (
         <tspan key={i} x="0" y={start + i * lh} dominantBaseline="central">{line}</tspan>
       ))}
