@@ -412,6 +412,12 @@ function UseCasePanel({ id, designId }) {
       )}
       <p className="src"><a href={uc.url} target="_blank" rel="noreferrer">Source</a></p>
       {uc.caveat && <p className="caveat"><b>Check:</b> {uc.caveat}</p>}
+      {uc.refs?.length > 0 && (
+        <p className="refs">
+          <span>Read next</span>
+          {uc.refs.map(([label, url]) => <a key={url} href={url} target="_blank" rel="noreferrer">{label}</a>)}
+        </p>
+      )}
 
       {sum && (
         <section className="verdict" aria-live="polite">
@@ -452,6 +458,15 @@ function UseCasePanel({ id, designId }) {
         {design && <p className="src"><a href={href.usecase(id)}>Remove the overlay</a></p>}
       </section>
 
+      {uc.sizing?.length > 0 && (
+        <section aria-labelledby="size-h">
+          <h2 id="size-h" className="label">Published sizes</h2>
+          <ul className="bom">
+            {uc.sizing.map((s) => <li key={s.text}>{s.text} <a className="srclink" href={s.url} target="_blank" rel="noreferrer">source</a></li>)}
+          </ul>
+        </section>
+      )}
+
       <section aria-labelledby="req-h">
         <h2 id="req-h" className="label">Required</h2>
         <ul className="needs">{rows('required').map((r) => <NeedRow key={r.need.products.join()} {...r} />)}</ul>
@@ -460,6 +475,24 @@ function UseCasePanel({ id, designId }) {
         <h2 id="rec-h" className="label">Recommended</h2>
         <ul className="needs">{rows('recommended').map((r) => <NeedRow key={r.need.products.join()} {...r} />)}</ul>
       </section>
+      {uc.offMap?.length > 0 && (
+        <section aria-labelledby="off-h">
+          <h2 id="off-h" className="label">Not on this map</h2>
+          <p className="offmap">The designs this scenario rests on also use things the map does not cover:</p>
+          <ul className="bom">
+            {uc.offMap.map((o) => <li key={o.name}><b>{o.name}.</b> {o.note}</li>)}
+          </ul>
+        </section>
+      )}
+
+      {uc.questions?.length > 0 && (
+        <section aria-labelledby="q-h">
+          <h2 id="q-h" className="label">Ask the vendor</h2>
+          <ul className="bom">
+            {uc.questions.map((q) => <li key={q}>{q}</li>)}
+          </ul>
+        </section>
+      )}
     </>
   );
 }

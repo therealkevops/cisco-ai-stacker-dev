@@ -244,3 +244,5 @@ a { color: inherit; }
 .line-key.bottom-left { top: auto; bottom: 16px; right: auto; left: 18px; }
 /* With many line styles in view the key drops the explanatory sub-lines to stay clear of the hexagons; the panel's key keeps them. */
 .line-key.dense li i { display: none; }
+.srclink { font-family: var(--mono); font-size: 11px; margin-left: 6px; }
+.bom li b { font-weight: 500; }
