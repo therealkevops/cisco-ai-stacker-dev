@@ -21,7 +21,7 @@ export const PRODUCT_DETAILS = {
       f('Shared buffer and telemetry', 'A 256 MB fully shared on-die packet buffer that treats mice and elephant flows differently, with model-driven telemetry and Nexus Dashboard Insights.'),
       f('Automation', 'Power On Auto Provisioning for day-0 setup, with Ansible, RESTCONF, NETCONF and gNMI using YANG and OpenConfig models.'),
     ],
-    caveat: 'Cisco names the ASIC only as "Silicon One", and sources disagree on whether it is the G200. A newer 9364E-SG2X variant has different specifications, so check which model you mean.',
+    caveat: 'Cisco\'s data sheet says "based on Silicon One" without naming the chip, so the G200 details on the Silicon One page are the family\'s, not confirmed for this switch. A newer 9364E-SG2X variant has different specifications, so check which model you mean.',
     refs: [['Nexus 9364E-SG2 data sheet', 'https://www.cisco.com/c/en/us/products/collateral/switches/nexus-9000-series-switches/nexus-9364e-sg2-switch-ds.html']],
   },
   'nexus-9000': {
@@ -41,15 +41,15 @@ export const PRODUCT_DETAILS = {
   },
   hyperfabric: {
     about:
-      'A cloud-managed AI infrastructure offering: a cloud controller handles design, ordering, deployment, validation and monitoring of an on-premises cluster. It comes as a full-stack option or a bring-your-own option.',
+      'A cloud-managed way to build an AI cluster network. A cloud controller designs, orders, deploys and monitors a fabric of Cisco HF6100 switches (Silicon One) or Spectrum-4 based N9164E switches, with UCS C885A servers, BlueField-3 adapters and optional VAST storage in the full-stack option.',
     features: [
-      f('Full-stack option', 'A turnkey cluster of UCS C885A servers with NVIDIA HGX H200 GPUs and BlueField-3 DPUs, following the NVIDIA Enterprise Reference Architecture, with optional VAST Data storage.'),
-      f('Bring your own', 'Attach your own servers, GPUs and storage to the Hyperfabric network.'),
-      f('Lifecycle from the cloud', 'Design, ordering, deployment, validation and monitoring from one cloud controller, with zero-touch provisioning.'),
-      f('Cluster templates', 'Preconfigured designs for small to extra-large AI clusters.'),
-      f('Lossless 800G fabric', 'Built on Cisco Silicon One and NVIDIA Spectrum-X Ethernet, with 800G optics.'),
+      f('Full-stack option', 'UCS C885A M8 servers with eight NVIDIA H200 GPUs and BlueField-3 DPUs, optional VAST storage and NVIDIA AI Enterprise, following the NVIDIA Enterprise Reference Architecture.'),
+      f('Two switch families', 'HF6100 switches built on Cisco Silicon One (800G and 400G models), or the Spectrum-4 based N9164E-NS4-O at 800G as an alternative for the east-west compute network.'),
+      f('Cloud controller', 'Designs the cluster, generates the bill of materials, and manages switch configuration, software versions and telemetry, with a subscription per deployed switch.'),
+      f('Rail-aligned templates', 'Back-end spine-leaf designs for 12, 16, 32, 64 and 128 C885A servers, with a super-spine tier at 128.'),
+      f('Spectrum-X load balancing', 'Needs the Fine Grain Load Balancing licence on Silicon One switches, and no licence on the N9164E.'),
     ],
-    caveat: 'Cisco documents of different dates name different server and GPU generations; one blog refers to newer UCS 880 systems with B300 GPUs.',
+    caveat: 'The controller manages the switches, not the servers: server BMC and host software, and the BlueField-3 kernels, are managed separately, and Intersight is one option. Hyperfabric and Nexus Dashboard are alternative operating models for the network, and Cisco does not describe an integration between them. Documents of different dates name different server and GPU generations; the UCS 880 with HGX B300 is listed as coming soon.',
     refs: [
       ['Hyperfabric AI data sheet', 'https://www.cisco.com/c/en/us/products/collateral/data-center-networking/nexus-hyperfabric/nexus-hyperfabric-ai-ds.html'],
       ['Hyperfabric Enterprise Reference Architecture', 'https://www.cisco.com/c/en/us/products/collateral/data-center-networking/nexus-hyperfabric/hyperfabric-ai-era-ds.html'],
@@ -88,17 +88,17 @@ export const PRODUCT_DETAILS = {
   },
   'silicon-one': {
     about:
-      'Cisco\'s own switch silicon family. The G200 is a 51.2 Tbps programmable chip aimed at spine, leaf and AI/ML fabrics. The Nexus 9364E-SG2 and the Hyperfabric 800G fabric are both built on Silicon One technology.',
+      'Cisco\'s own switch silicon family. The Nexus 9364E-SG2 and the Hyperfabric HF6100 switches are built on it, and Cisco lists it beside NVIDIA Spectrum-X as the choice of switch silicon in the Secure AI Factory. The G200 is one member of the family.',
     features: [
-      f('51.2 Tbps in one chip', 'Described as a 5 nm, full-duplex, standalone switching processor for fixed-form-factor spine, leaf and AI/ML use.'),
       f('Programmable', 'P4-programmable forwarding with its own operating system and an SDK, so behaviour can change without new silicon.'),
-      f('AI/ML load balancing', 'Congestion-aware packet spraying, congestion-aware stateful load balancing and hardware link-failure redistribution.'),
-      f('Shared buffer', 'A fully shared packet buffer, and non-correlated weighted ECMP to avoid hash polarisation.'),
+      f('G200: 51.2 Tbps in one chip', 'Described as a 5 nm, full-duplex, standalone switching processor for fixed-form-factor spine, leaf and AI/ML use.'),
+      f('AI/ML load balancing', 'Congestion-aware packet spraying, congestion-aware stateful load balancing and hardware link-failure redistribution, as listed for the G200.'),
+      f('Shared buffer', 'A fully shared packet buffer, and non-correlated weighted ECMP to avoid hash polarisation, as listed for the G200.'),
     ],
-    caveat: 'Whether the Nexus 9364E-SG2 uses the G200 is unconfirmed, because Cisco describes it only as "based on Silicon One". The G200\'s role in a fully scheduled fabric is also unconfirmed.',
+    caveat: 'Cisco\'s data sheets for the 9364E-SG2 and the HF6100 say only "Silicon One", so which family member each uses is not confirmed here; the G200 features are the G200\'s own. The G200\'s role in a fully scheduled fabric is also unconfirmed.',
     refs: [
-      ['Silicon One G200 data sheet', 'https://cisco.com/c/en/us/solutions/collateral/silicon-one/silicon-one-g200-ds.html'],
       ['Silicon One product family white paper', 'https://cisco.com/c/en/us/solutions/collateral/silicon-one/silicon-one-wp.html'],
+      ['Silicon One G200 data sheet', 'https://cisco.com/c/en/us/solutions/collateral/silicon-one/silicon-one-g200-ds.html'],
     ],
   },
   'spectrum-x': {
@@ -249,11 +249,12 @@ export const PRODUCT_DETAILS = {
       f('Hubble observability', 'Visibility at layers 3, 4 and 7, with automatic service-dependency maps, across nodes, clusters and multi-cluster setups.'),
       f('Enterprise additions', 'A policy editor driven by live traffic, OIDC-based RBAC, and SIEM integrations such as Splunk and Elastic.'),
     ],
-    caveat: 'Cisco\'s blog describes the layering over Nexus but not a specific integration mechanism. Isovalent is not on the current Secure AI Factory page; its place in the AI designs rests on the AI PODs page, which lists it among the security and observability building blocks.',
+    caveat: 'Cisco\'s blog describes the layering over Nexus but not a specific integration mechanism. Isovalent\'s Cisco Live 2025 recap says it published a Cisco ACI and Nexus integration guide, which was not read here. Isovalent is not on the current Secure AI Factory page; its place in the AI designs rests on the AI PODs page, which lists it among the security and observability building blocks.',
     refs: [
       ['Extending the infrastructure fabric: cloud-native Isovalent networking', 'https://blogs.cisco.com/datacenter/extending-infrastructure-fabric-the-journey-to-cloud-native-isovalent-networking'],
       ['Isovalent Enterprise for Cilium brief', 'https://isovalent.com/briefs/isovalent-cilium-enterprise/'],
       ['Hubble', 'https://isovalent.com/projects/hubble'],
+      ['Isovalent at Cisco Live 2025', 'https://isovalent.com/blog/post/cisco-live-2025-san-diego-the-isovalent-recap/'],
     ],
   },
 

@@ -62,8 +62,8 @@ test('roadmap and early-access items are flagged as such, not stated as availabl
 test('where sources disagree, the description says so rather than picking one', () => {
   assert.match(detailsOf('c885a').caveat, /different dates|differ/i);
   assert.match(detailsOf('c845a').caveat, /differ/i);
-  assert.match(detailsOf('silicon-one').caveat, /unconfirmed|G200/);
-  assert.match(detailsOf('n9364e').caveat, /G200|Silicon One/);
+  assert.match(detailsOf('silicon-one').caveat, /not confirmed|unconfirmed/);
+  assert.match(detailsOf('n9364e').caveat, /without naming the chip/);
 });
 
 test('a figure quoted from a vendor is attributed to the vendor', () => {

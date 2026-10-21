@@ -7,7 +7,7 @@ A honeycomb map of the Cisco AI stack, in the manner of an ecosystem map. At the
 | Platform and runtime | NVIDIA AI Enterprise, Red Hat OpenShift, Nutanix, Kubernetes |
 | Operations and agents | Splunk Observability, AI Canvas, ThousandEyes, AGNTCY |
 | Security | AI Defense, Hybrid Mesh Firewall, Isovalent Runtime Security, Splunk ES, XDR |
-| Network fabric | Nexus 9364E-SG2, Nexus 9000, UCS Fabric Interconnects, Hyperfabric AI, Nexus Dashboard, Isovalent Networking |
+| Network fabric | Nexus 9364E-SG2, Nexus 9000, Hyperfabric AI, Nexus Dashboard, Cisco Silicon One, UCS Fabric Interconnects, Isovalent Networking |
 | Compute and accelerators | UCS C885A M8, C845A M8, UCS X-Series, Intersight, NVIDIA GPUs, BlueField |
 | Data and storage | NetApp, Everpure (Pure Storage), VAST Data, Hitachi Vantara |
 
@@ -40,7 +40,7 @@ npm run build    # static files in dist/, ready for Vercel or any static host
 - [`src/data/usecases.js`](src/data/usecases.js) holds the customer use cases. Each lists the needs (one product, or several that are alternatives to each other) with a role of `required` or `recommended` and a reason, and the designs that are validated ways to deliver it. A use case is `sourced` when its required needs come from published design guides, or `draft` when they are an editorial reading and need review. Recommended needs are always editorial. A product can appear in only one need per use case.
 - To add a validated design, add a node with `kind: 'design'` and "contains" links to what it includes. A design that publishes a bill of materials can carry `bom` (the lines as published) and `offMap` (what it uses that is not a product on the map). Coverage follows `composes` links downward, so a design that contains another design includes everything inside it. A product family and its models use a separate `models` link, which does not count: a design that uses the Nexus 9000 family has not necessarily used every model.
 
-Line styles live in [`src/map/linkstyle.js`](src/map/linkstyle.js): eight relationship types collapse into six visual styles (structure, runs on, carries traffic, manages, secures, data flow), and a test fails if any type has no style or two styles look alike. The tests also fail if a use case names a product that does not exist, a design a sourced use case lists fails to meet one of its required needs, a link points at a product that does not exist, a product has no source, an integration reads the same from both ends, a primitive's products do not form one connected clump on the map, or a label is too long for its hexagon.
+Line styles live in [`src/map/linkstyle.js`](src/map/linkstyle.js): nine relationship types collapse into six visual styles (structure, runs on, carries traffic, manages, secures, data flow), and a test fails if any type has no style or two styles look alike. The tests also fail if a use case names a product that does not exist, a design a sourced use case lists fails to meet one of its required needs, a link points at a product that does not exist, a product has no source, an integration reads the same from both ends, a primitive's products do not form one connected clump on the map, or a label is too long for its hexagon.
 
 ### Accuracy
 

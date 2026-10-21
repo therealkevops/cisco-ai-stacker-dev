@@ -16,6 +16,7 @@ export const SOURCES = {
   foundation: 'https://www.sdxcentral.com/news/cisco-demos-practical-agentic-ai-for-soc-automation/',
   flexpodRag: 'https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flexpod_rag_nim.html',
   isovalentBlog: 'https://blogs.cisco.com/datacenter/extending-infrastructure-fabric-the-journey-to-cloud-native-isovalent-networking',
+  siliconOne: 'https://cisco.com/c/en/us/solutions/collateral/silicon-one/silicon-one-wp.html',
   c845aDs: 'https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/ucs-c845a-m8-rack-server-ds.html',
   flashstackRag: 'https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flashstack_rag_nim.html',
 };
@@ -78,8 +79,8 @@ export const NODES = [
     offMap: ['Cisco Webex chat bot (an example integration)', 'Milvus vector database', 'Portworx Enterprise', 'Cisco MDS (named as a FlashStack component, not detailed)'] },
 
   // Silicon and accelerators
-  { id: 'silicon-one', name: 'Silicon One G200', primitive: 'network', vendor: 'cisco', status: 'check', url: SOURCES.pod2894,
-    blurb: 'Cisco\'s own switch silicon. Sources disagree on exactly which ASIC sits in the 9364E-SG2, so confirm before quoting it.' },
+  { id: 'silicon-one', name: 'Cisco Silicon One', primitive: 'network', vendor: 'cisco', status: 'sourced', url: SOURCES.siliconOne,
+    blurb: 'Cisco\'s own switch silicon family, which the Nexus 9364E-SG2 and the Hyperfabric HF6100 switches are built on. The G200 is one member: a 51.2 Tbps programmable chip.' },
   { id: 'nvidia-gpu', name: 'NVIDIA GPUs', primitive: 'compute', vendor: 'partner', status: 'sourced', url: SOURCES.pod2894,
     blurb: 'The accelerator everything else in the stack exists to feed: eight-GPU HGX baseboards in the C885A (H200 in its guide), and L40S GPUs in the X440p PCIe nodes of UCS X-Series.' },
   { id: 'bluefield', name: 'NVIDIA BlueField DPU', primitive: 'compute', vendor: 'partner', status: 'sourced', url: SOURCES.factory,
@@ -171,6 +172,7 @@ export const LINK_TYPES = [
   { id: 'secures', name: 'Secures', from: 'Secures', to: 'Is secured by' },
   { id: 'observes', name: 'Observes', from: 'Observes', to: 'Is observed by' },
   { id: 'feeds', name: 'Feeds data to', from: 'Feeds data to', to: 'Draws data from' },
+  { id: 'stores', name: 'Stores data for', from: 'Stores data for', to: 'Has its data stored by' },
 ];
 
 // (a, b, type, what the integration is, status). Direction matters: see LINK_TYPES.
@@ -217,7 +219,7 @@ export const LINKS = [
   L('intersight', 'ai-pod', 'manages', 'Manages the compute'),
 
   // Silicon
-  L('n9364e', 'silicon-one', 'composes', 'Switch ASIC', 'check'),
+  L('n9364e', 'silicon-one', 'composes', 'Built on Cisco Silicon One technology'),
   L('spectrum-x', 'n9364e', 'composes', 'Cisco Silicon One switches take part in the Spectrum-X platform'),
   L('c885a', 'nvidia-gpu', 'composes', 'Eight HGX GPUs per server'),
   L('ucs-x', 'nvidia-gpu', 'composes', 'X440p PCIe nodes carry the GPUs (two L40S per node in the RAG designs)'),
@@ -239,7 +241,21 @@ export const LINKS = [
   L('n9364e', 'bluefield', 'network', 'Terminates on the server adapters'),
   L('nexus-dashboard', 'n9364e', 'manages', 'Fabric provisioning and operations'),
   L('nexus-9000', 'netapp', 'network', 'Storage traffic on the front-end network'),
-  L('hyperfabric', 'c885a', 'network', 'Cloud-managed fabric for the GPU servers', 'check'),
+  L('hyperfabric', 'c885a', 'composes', 'The compute node of the full-stack option'),
+  L('hyperfabric', 'silicon-one', 'composes', 'The HF6100 switches are built on Cisco Silicon One'),
+  L('hyperfabric', 'spectrum-x', 'composes', 'Spectrum-X runs on the Spectrum-4 based N9164E, or on Silicon One switches with the Fine Grain Load Balancing licence'),
+  L('hyperfabric', 'bluefield', 'network', 'Carries the east-west GPU traffic between the servers\' BlueField-3 SuperNICs'),
+  L('hyperfabric', 'nexus-9000', 'composes', 'Cisco N9300 Series switches are among the switches it supports'),
+  L('hyperfabric', 'vast', 'composes', 'Optional VAST Data storage (Cisco EBox) in the full-stack option'),
+  L('hyperfabric', 'nvidia-ai-enterprise', 'composes', 'Optional AI software stack in the full-stack option'),
+
+  // Storage and the platform it serves
+  L('pure', 'openshift', 'stores', 'Portworx provides container-native persistent storage for OpenShift'),
+  L('netapp', 'openshift', 'stores', 'Trident provisions persistent storage for OpenShift'),
+  L('intersight', 'pure', 'manages', 'Intersight Assist connects FlashArray to Intersight'),
+  L('vast', 'c845a', 'runs', 'VAST AI OS runs on UCS C845A M8 as its compute node (CNode-X)'),
+  L('nexus-9000', 'vast', 'network', 'Nexus 9300 switches connect the VAST nodes'),
+  L('openshift', 'ucs-x', 'runs', 'Runs on bare metal on UCS X-Series in the RAG designs'),
 
   // Platform
   L('nvidia-ai-enterprise', 'nvidia-gpu', 'runs', 'Software stack that drives the GPUs', 'check'),
@@ -247,6 +263,7 @@ export const LINKS = [
   L('nvidia-ai-enterprise', 'kubernetes', 'runs', 'Runs on Kubernetes'),
   L('nvidia-ai-enterprise', 'nutanix', 'runs', 'Runs on Nutanix NKP'),
   L('isovalent', 'kubernetes', 'runs', 'Cilium runs in the cluster as its network layer'),
+  L('isovalent', 'nexus-9000', 'runs', 'Nexus provides the underlay, and Isovalent works in the software layers above it'),
   L('isovalent', 'isovalent-runtime', 'composes', 'Runtime security is part of Isovalent'),
 
   // Security
