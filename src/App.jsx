@@ -13,9 +13,13 @@ function titleFor(route) {
 
 export default function App() {
   const [route, setRoute] = useState(() => parseRoute(window.location.hash));
+  const [hoverId, setHoverId] = useState(null);
 
   useEffect(() => {
-    const onHash = () => setRoute(parseRoute(window.location.hash));
+    const onHash = () => {
+      setRoute(parseRoute(window.location.hash));
+      setHoverId(null);
+    };
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
@@ -35,9 +39,9 @@ export default function App() {
   return (
     <div className="app">
       <main className="map-wrap">
-        <HexMap route={route} />
+        <HexMap route={route} hoverId={hoverId} />
       </main>
-      <Panel route={route} />
+      <Panel route={route} onHover={setHoverId} />
     </div>
   );
 }

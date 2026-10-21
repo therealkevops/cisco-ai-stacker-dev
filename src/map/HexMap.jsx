@@ -2,13 +2,12 @@ import React, { useMemo } from 'react';
 import { PRIMITIVES, NODES } from '../data/stack.js';
 import { nodeById, layoutOrder, linksBetweenProducts, membersOf, coverage, productsIn, assess, caseById, href } from '../data/model.js';
 import { layoutMap, allCells, hexPoints, toPixel, linkPath, wrapLabel, cellKey } from './hexgrid.js';
+import { styleOf, stylesPresent } from './linkstyle.js';
+import LineKey from './LineKey.jsx';
 
 const SIZE = 52; // centre-to-corner of a cell, in map units
 const GAP = 0.93; // hexes are drawn slightly smaller than their cell, leaving a thin channel between
 const MAX_LABEL = 11; // characters per line inside a product hex
-
-// Dash pattern per relationship, so types read apart without relying on colour.
-const DASH = { composes: undefined, runs: '2 4', network: '10 4', manages: '5 3', secures: '12 3 2 3', observes: '1 5', feeds: '7 3 1.5 3' };
 
 const layout = layoutMap(PRIMITIVES, layoutOrder(), SIZE);
 const used = new Set([...layout.values()].map((c) => cellKey(c.q, c.r)));
@@ -36,7 +35,7 @@ function Label({ lines, cls, dy = 0 }) {
   );
 }
 
-export default function HexMap({ route }) {
+export default function HexMap({ route, hoverId }) {
   // What is lit for the current selection: a product and its neighbours, a design's members, or a
   // primitive's own products.
   const view = useMemo(() => {
@@ -90,6 +89,7 @@ export default function HexMap({ route }) {
   };
 
   return (
+    <>
     <svg
       className="map"
       viewBox={`${bounds.x} ${bounds.y} ${bounds.w} ${bounds.h}`}
@@ -147,14 +147,16 @@ export default function HexMap({ route }) {
       <g className="links" aria-hidden="true">
         {view.links.map((l) => {
           const { d } = linkPath(layout.get(l.a), layout.get(l.b), SIZE);
-          const key = l.a + l.b + l.type;
+          const style = styleOf(l.type);
+          // Hovering a connection in the panel picks out its line and quiets the rest.
+          const hovered = hoverId && (l.a === hoverId || l.b === hoverId);
+          const faded = hoverId && !hovered;
           return (
-            <g key={key}>
+            <g key={l.a + l.b + l.type} className={hovered ? 'hot' : faded ? 'quiet' : ''}>
               <path className="halo" d={d} fill="none" />
-              <path d={d} fill="none" strokeDasharray={DASH[l.type]}
-                strokeLinecap={l.type === 'observes' ? 'round' : 'butt'}
-                markerStart={l.type === 'composes' ? 'url(#whole)' : undefined}
-                markerEnd={l.type === 'composes' ? undefined : 'url(#arrow)'} />
+              <path d={d} fill="none" style={{ '--w': style.width }} strokeWidth={style.width} strokeDasharray={style.dash} strokeLinecap={style.cap}
+                markerStart={style.ring ? 'url(#whole)' : undefined}
+                markerEnd={style.ring ? undefined : 'url(#arrow)'} />
             </g>
           );
         })}
@@ -196,5 +198,7 @@ export default function HexMap({ route }) {
         })}
       </g>
     </svg>
+    {view.links.length > 0 && <LineKey styles={stylesPresent(view.links)} />}
+    </>
   );
 }

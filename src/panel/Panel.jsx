@@ -1,4 +1,6 @@
 import React from 'react';
+import { LINK_STYLES, styleOf } from '../map/linkstyle.js';
+import { LineSample } from '../map/LineKey.jsx';
 import { PRIMITIVES, LINK_TYPES, NODES, LINKS } from '../data/stack.js';
 import { USE_CASES } from '../data/usecases.js';
 import {
@@ -25,7 +27,15 @@ function Legend({ useCase }) {
           With a design chosen: <em>tick</em> means the design meets it, <em>plus</em> means it is a gap to fill.
         </p>
       )}
-      <p className="key-lines">Lines run the way the relationship does: <em>carries traffic</em>, <em>manages</em>, <em>secures</em>, <em>observes</em>, <em>feeds</em>, <em>runs on</em>; a ringed end means <em>contains</em>.</p>
+      <h3 className="sublabel">Lines, drawn when you pick a product</h3>
+      <ul className="line-legend">
+        {LINK_STYLES.map((s) => (
+          <li key={s.id}>
+            <LineSample style={s} />
+            <span><b>{s.label}</b><i>{s.detail}</i></span>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
@@ -84,7 +94,7 @@ function Overview() {
 
 const Back = () => <a className="back" href={href.home}>Clear selection</a>;
 
-function ProductPanel({ id }) {
+function ProductPanel({ id, onHover }) {
   const node = nodeById.get(id);
   const prim = primitiveById.get(node.primitive);
   const links = linksOf(id);
@@ -129,10 +139,13 @@ function ProductPanel({ id }) {
         <h2 className="label">{links.length} integration{links.length === 1 ? '' : 's'}</h2>
         {groups.map((g) => (
           <div key={g.key} className="group">
-            <h3>{g.name}</h3>
-            <ul>
+            <h3><LineSample style={styleOf(g.items[0].type)} />{g.name}</h3>
+            <ul onMouseLeave={() => onHover(null)}>
               {g.items.map((l) => (
-                <li key={l.other.id + l.type}>
+                <li key={l.other.id + l.type}
+                  onMouseEnter={() => onHover(l.other.kind ? null : l.other.id)}
+                  onFocus={() => onHover(l.other.kind ? null : l.other.id)}
+                  onBlur={() => onHover(null)}>
                   <a href={l.other.kind ? href.design(l.other.id) : href.product(l.other.id)}>{l.other.name}</a>
                   <span className="why">{l.label}{l.status === 'check' && <em> (unverified)</em>}</span>
                 </li>
@@ -355,11 +368,11 @@ function UseCasePanel({ id, designId }) {
   );
 }
 
-export default function Panel({ route }) {
+export default function Panel({ route, onHover }) {
   return (
     <aside className="panel" aria-label="Details">
       {route.kind === null && <Overview />}
-      {route.kind === 'product' && <ProductPanel id={route.id} />}
+      {route.kind === 'product' && <ProductPanel id={route.id} onHover={onHover} />}
       {route.kind === 'primitive' && <PrimitivePanel id={route.id} />}
       {route.kind === 'design' && <DesignPanel id={route.id} />}
       {route.kind === 'usecase' && <UseCasePanel id={route.id} designId={route.design} />}
