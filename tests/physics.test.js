@@ -15,7 +15,7 @@ test('the same seed gives the same layout', () => {
 
 test('settled bodies sit close to their orbit', () => {
   const w = build();
-  settle(w, 800);
+  settle(w);
   for (const b of w.bodies) {
     const off = Math.abs(Math.hypot(b.x, b.y) - b.ring);
     assert.ok(off < 45, `${b.id} is ${off.toFixed(1)}px off its orbit`);
@@ -24,7 +24,7 @@ test('settled bodies sit close to their orbit', () => {
 
 test('settled bodies do not sit on top of each other', () => {
   const w = build();
-  settle(w, 800);
+  settle(w);
   let closest = Infinity;
   for (let i = 0; i < w.bodies.length; i++)
     for (let j = i + 1; j < w.bodies.length; j++) {
@@ -37,7 +37,7 @@ test('settled bodies do not sit on top of each other', () => {
 
 test('the simulation stays bounded and comes to rest', () => {
   const w = build();
-  settle(w, 500);
+  settle(w);
   for (let i = 0; i < 60 * 60 * 10; i++) step(w);
   for (const b of w.bodies) {
     assert.ok(Number.isFinite(b.x) && Number.isFinite(b.y), `${b.id} left the numbers`);
@@ -47,7 +47,7 @@ test('the simulation stays bounded and comes to rest', () => {
 
 test('selecting a body pulls its partners closer, and they fall back when released', () => {
   const w = build();
-  settle(w, 800);
+  settle(w);
   const focus = w.index.get('ai-canvas');
   const partners = [...w.neighbours[focus]];
   const meanGap = () =>
@@ -62,7 +62,7 @@ test('selecting a body pulls its partners closer, and they fall back when releas
 
 test('zero gravity lets bodies drift off their orbits', () => {
   const w = build();
-  settle(w, 500);
+  settle(w);
   for (let i = 0; i < 300; i++) step(w, { gravity: 0 });
   const off = w.bodies.reduce((s, b) => s + Math.abs(Math.hypot(b.x, b.y) - b.ring), 0) / w.bodies.length;
   assert.ok(off > 5);
@@ -70,9 +70,9 @@ test('zero gravity lets bodies drift off their orbits', () => {
 
 test('a settled chart is stationary', () => {
   const w = build();
-  settle(w, 600);
+  settle(w);
   const before = w.bodies.map((b) => [b.x, b.y]);
   for (let i = 0; i < 60 * 30; i++) step(w);
   const moved = Math.max(...w.bodies.map((b, i) => Math.hypot(b.x - before[i][0], b.y - before[i][1])));
-  assert.ok(moved < 0.5, `a body moved ${moved.toFixed(2)}px on its own`);
+  assert.equal(moved, 0, `a body moved ${moved.toFixed(4)}px on its own`);
 });

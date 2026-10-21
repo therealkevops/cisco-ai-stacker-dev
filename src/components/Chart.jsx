@@ -23,7 +23,7 @@ export default function Chart({ selectedId, onSelect, hiddenTypes, matchIds, gra
 
   useEffect(() => {
     const world = createWorld(LAYERS, NODES, LINKS);
-    settle(world, 600);
+    settle(world);
     worldRef.current = world;
     viewRef.current = { x: 0, y: 0, k: 1 };
   }, [resetKey]);
@@ -98,6 +98,7 @@ export default function Chart({ selectedId, onSelect, hiddenTypes, matchIds, gra
           hoverId: hoverRef.current,
           matchIds: p.matchIds,
           hiddenTypes: p.hiddenTypes,
+          freeRight: open ? width - PANEL_W - 30 : width - 8,
         },
       });
     };

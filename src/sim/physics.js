@@ -14,14 +14,15 @@ const K_RING = 14;
 const K_REPEL = 52000;
 const REPEL_RANGE = 150;
 const K_OVERLAP = 30;
-const K_LINK = 1.6;
-const K_SAME_ORBIT = 2600; // long-range push between bodies on one orbit, so each orbit spreads around its circle
-const SAME_ORBIT_RANGE = 320;
+const K_LINK = 0.25;
+const K_SAME_ORBIT = 20000; // long-range push between bodies on one orbit, so each orbit spreads around its circle
+const SAME_ORBIT_RANGE = 700;
 const LINK_REST = 80;
 const LINK_MAX_STRETCH = 40; // beyond this a link stops pulling harder, so orbits always win
 const K_FOCUS = 1.5;
 const FOCUS_RELAX = 0.3;
 const DAMPING = 0.92;
+const REST_SPEED = 0.01; // below this a body stops dead, so a settled chart is exactly still
 
 export function mulberry32(seed) {
   let a = seed >>> 0;
@@ -126,8 +127,12 @@ export function step(world, { gravity = 1, focus = -1 } = {}) {
       if (d2 > range * range) continue;
       const d = Math.sqrt(Math.max(d2, 1));
       const minD = a.radius + b.radius + 26;
-      let mag = (K_REPEL * Math.sqrt(a.mass * b.mass)) / (d * d);
-      if (same) mag += K_SAME_ORBIT / d;
+      // Each push is shifted down by its value at the range limit, so it fades to zero there. A hard
+      // cutoff leaves a bump in the force that bodies hovering at that distance keep bouncing off.
+      const pair = K_REPEL * Math.sqrt(a.mass * b.mass);
+      let mag = pair / (d * d) - pair / (REPEL_RANGE * REPEL_RANGE);
+      if (mag < 0) mag = 0;
+      if (same) mag += K_SAME_ORBIT / d - K_SAME_ORBIT / SAME_ORBIT_RANGE;
       if (d < minD) mag += K_OVERLAP * (minD - d);
       const ux = dx / d;
       const uy = dy / d;
@@ -162,12 +167,17 @@ export function step(world, { gravity = 1, focus = -1 } = {}) {
     const inv = 1 / (0.6 + 0.4 * b.mass);
     b.vx = (b.vx + fx[i] * inv * DT) * DAMPING;
     b.vy = (b.vy + fy[i] * inv * DT) * DAMPING;
+    if (Math.hypot(b.vx, b.vy) < REST_SPEED) {
+      b.vx = 0;
+      b.vy = 0;
+      continue;
+    }
     b.x += b.vx * DT * 60;
     b.y += b.vy * DT * 60;
   }
 }
 
 // Run the simulation without drawing, so the first frame is already a settled chart.
-export function settle(world, steps = 500) {
+export function settle(world, steps = 4000) {
   for (let i = 0; i < steps; i++) step(world);
 }

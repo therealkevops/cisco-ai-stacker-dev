@@ -242,10 +242,15 @@ export function drawScene(ctx, scene) {
     const dist = Math.hypot(b.x, b.y) || 1;
     const ox = b.x / dist;
     const oy = b.y / dist;
-    const right = ox >= -0.15;
-    const lx = b.x + ox * (b.radius + 7 * px);
     ctx.font = `${(node.mass === 3 ? 11.5 : 10.5) * px}px ${MONO}`;
     const w = ctx.measureText(node.name).width;
+    // Labels run outward from the centre, but flip to the other side of the body rather than run
+    // under the detail panel or off the edge of the plate.
+    const screenX = (x) => width / 2 + view.x + x * s;
+    let right = ox >= -0.15;
+    if (right && screenX(b.x + w + b.radius + 7 * px) > state.freeRight) right = false;
+    else if (!right && screenX(b.x - w - b.radius - 7 * px) < 8) right = true;
+    const lx = b.x + (right ? 1 : -1) * (b.radius + 7 * px);
     const h = 13 * px;
     // Try the natural spot, then nudge up and down in label-height steps until one is clear.
     let ly = b.y + oy * (b.radius + 7 * px);
