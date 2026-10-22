@@ -141,22 +141,17 @@ function EcoSection({ id, documentedTitle, alikeTitle, items }) {
   const documented = items.filter((x) => x.basis === 'documented');
   const alike = items.filter((x) => x.basis !== 'documented');
   const rows = (list) => (
-    <>
-      <ul className="list stack">
-        {list.map((x) => (
-          <li key={x.key}>
-            <a href={x.href}>{x.name}</a>
-            <span className="sub">{x.relation}</span>
-          </li>
-        ))}
-      </ul>
+    <ul className="list stack">
       {list.map((x) => (
-        <p key={x.key} className="fineprint">
-          {x.note}{' '}
-          {x.url && <a className="srclink" href={x.url} target="_blank" rel="noreferrer">source{x.read ? `, read ${x.read}` : ''}</a>}
-        </p>
+        <li key={x.key}>
+          {x.lead ? <><span className="sub">{x.relation}</span> <a href={x.href}>{x.name}</a></> : <><a href={x.href}>{x.name}</a><span className="sub">{x.relation}</span></>}
+          <p className="fineprint">
+            {x.note}{' '}
+            {x.url && <a className="srclink" href={x.url} target="_blank" rel="noreferrer">source{x.read ? `, read ${x.read}` : ''}</a>}
+          </p>
+        </li>
       ))}
-    </>
+    </ul>
   );
   return (
     <>
@@ -169,7 +164,7 @@ function EcoSection({ id, documentedTitle, alikeTitle, items }) {
       {alike.length > 0 && (
         <section aria-labelledby={`${id}-alike-h`}>
           <h2 id={`${id}-alike-h`} className="label">{alikeTitle}</h2>
-          <p className="sublabel">Our reading, not like-for-like</p>
+          <p className="sublabel">Our reading: the vendor's pages do not state these</p>
           {rows(alike)}
         </section>
       )}
@@ -185,16 +180,18 @@ function AlsoIn({ node }) {
     key: x.lens + x.id,
     href: hrefTo(x.lens, x.id),
     name: `${MODELS[x.lens].data.name}: ${MODELS[x.lens].nodeById.get(x.id).name}`,
+    lead: true,
   }));
   return <EcoSection id="also" documentedTitle="Where Cisco and NVIDIA name it" alikeTitle="In the other focuses" items={items} />;
 }
 
 // For a vendor product or design: the open-source entries that point at it.
 function Counterparts({ id }) {
-  const { data } = useModel();
+  const { data, nodeById } = useModel();
   const found = counterparts(data.id, id);
   if (!found.length) return null;
-  const items = found.map((c) => ({ ...c, key: c.node.id, href: c.from.href.product(c.node.id), name: c.node.name }));
+  const here = nodeById.get(id).kind ? 'this design' : 'this product';
+  const items = found.map((c) => ({ ...c, key: c.node.id, href: c.from.href.product(c.node.id), name: c.node.name, relation: `${c.relation} ${here}` }));
   return <EcoSection id="cp" documentedTitle="Open-source projects its documents name" alikeTitle="Open-source counterparts" items={items} />;
 }
 

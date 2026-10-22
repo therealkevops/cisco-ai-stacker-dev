@@ -15,6 +15,7 @@ import { PRIMITIVES, LINK_TYPES } from './stack.js';
 import { OSS_DETAILS, OSS_PRIMITIVE_DETAILS, OSS_PRIMITIVE_SUMMARIES } from './oss-details.js';
 import { OSS_USE_CASES } from './usecases-oss.js';
 import { OS } from './oss-urls.js';
+import { CROSS } from './crosslinks.js';
 
 
 const oss = (id, name, primitive, url, blurb, extra = {}) => ({ id, name, primitive, vendor: 'oss', status: 'sourced', url, blurb, ...extra });
@@ -367,7 +368,9 @@ const MATURITY = {
 const withStewards = (nodes) => nodes.map((n) => {
   if (n.kind) return n;
   const [name, kind] = STEWARDS[n.id] || [];
-  return { ...n, steward: { name, kind }, ...(MATURITY[n.id] ? { maturity: MATURITY[n.id] } : {}) };
+  const { alsoIn: _inline, ...rest } = n;
+  const alsoIn = CROSS.filter((c) => c.oss === n.id).map(({ oss: _o, ...c }) => c);
+  return { ...rest, ...(alsoIn.length ? { alsoIn } : {}), steward: { name, kind }, ...(MATURITY[n.id] ? { maturity: MATURITY[n.id] } : {}) };
 });
 
 export const OSS = {

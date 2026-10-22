@@ -150,3 +150,35 @@ test('ChatQnA meets every required need of the RAG scenario', () => {
   assert.equal(s.required.met, s.required.total);
   assert.ok(s.recommended.met < s.recommended.total, 'the design leaves recommended needs open');
 });
+
+test('a documented cross-focus link carries the vendor page and the date it was read; a counterpart does not claim either', () => {
+  let documented = 0;
+  for (const n of oss.nodes) for (const a of n.alsoIn || []) {
+    assert.ok(['documented', 'counterpart'].includes(a.basis), `${n.id} -> ${a.id}`);
+    if (a.basis === 'documented') {
+      documented += 1;
+      assert.match(a.url, /^https:\/\//, `${n.id} -> ${a.id}`);
+      assert.ok(a.read, `${n.id} -> ${a.id}: no read date`);
+    } else {
+      assert.ok(!a.url && !a.read, `${n.id} -> ${a.id}: a counterpart is our reading and has no vendor source`);
+    }
+  }
+  assert.ok(documented >= 60, `${documented} documented links`);
+});
+
+test('both vendors have documented open-source links, and each is reachable from the vendor side', () => {
+  for (const lens of ['cisco', 'nvidia']) {
+    const found = Object.values(MODELS.oss.nodes).flatMap((n) => (n.alsoIn || []).filter((a) => a.lens === lens && a.basis === 'documented'));
+    assert.ok(found.length >= 20, `${lens}: ${found.length}`);
+    for (const a of found) assert.ok(counterparts(lens, a.id).some((c) => c.basis === 'documented'), `${lens}/${a.id}`);
+  }
+});
+
+test('what the vendors\' pages say and what the maps hold stay consistent for the cases the checks found', () => {
+  const rel = (lens, id, oss) => counterparts(lens, id).find((c) => c.node.id === oss);
+  assert.equal(rel('cisco', 'ai-pod-training', 'slurm').basis, 'documented');
+  assert.equal(rel('nvidia', 'dynamo', 'vllm').basis, 'documented');
+  assert.equal(rel('nvidia', 'nim', 'kserve').basis, 'counterpart', 'KServe is our reading of an alternative to NIM; NVIDIA names it nowhere');
+  assert.equal(rel('cisco', 'isovalent', 'cilium').basis, 'counterpart');
+  assert.match(rel('cisco', 'foundation-ai', 'open-weight-models').note, /without naming it/);
+});
