@@ -130,10 +130,10 @@ export const NODES = [
     ],
     offMap: ['Red Hat OpenShift AI', 'Portworx'] },
   { id: 'hf-cloud-ra-h200', name: 'Hyperfabric Cloud Reference Architecture (HGX H200)', short: 'Hyperfabric Cloud RA', kind: 'design', vendor: 'cisco', status: 'sourced', url: SOURCES.hfCloudH200,
-    blurb: 'Cisco\'s NCP-compliant Cloud Reference Architecture for service providers: UCS C885A M8 with HGX H200 on Hyperfabric switches, with a back-end and a front-end VRF per tenant and a separate tenant account in the VAST-based EBox storage. NCP compliance is Cisco\'s statement.',
+    blurb: 'Cisco\'s Cloud Reference Architecture for service providers: UCS C885A M8 with HGX H200, with a back-end and a front-end VRF per tenant and a separate tenant account in the VAST-based EBox storage. Cisco says the build with the Spectrum-4 N9164E-NS4-O east-west switch is NVIDIA Cloud Partner compliant; the HF6100 build is offered without that compliance.',
     bom: [
       'UCS C885A M8 with HGX H200, provisioned by Intersight',
-      'Nexus Hyperfabric switches (HF6100-64ED, on Cisco Silicon One), with Spectrum-X benefits on BlueField-3 SuperNICs and a Fine Grain Load Balancing licence',
+      'Nexus Hyperfabric switches (HF6100-64ED, on Cisco Silicon One), with Spectrum-X benefits on BlueField-3 SuperNICs and a Fine Grain Load Balancing licence, or the Spectrum-4 N9164E-NS4-O for the NCP-compliant build',
       'VXLAN with a BGP EVPN control plane: a back-end VRF and a front-end VRF per tenant, and two provider-only VRFs',
       'Cisco EBox (VAST) storage with a tenant account and VLAN per tenant',
       'Per-tenant management nodes running Kubernetes and / or Slurm',

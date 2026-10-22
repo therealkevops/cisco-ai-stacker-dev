@@ -113,7 +113,7 @@ const NVIDIA_NODES = [
     ],
     offMap: ['The vulnerability scanner', 'Nemotron models'] },
   { id: 'nv-data-flywheel', name: 'Data Flywheel Blueprint', short: 'Data Flywheel', kind: 'design', vendor: 'nvidia', status: 'sourced', url: NV.dataFlywheel,
-    blurb: 'NVIDIA\'s blueprint (updated April 2026): a loop of log ingestion, LoRA fine-tuning with NeMo Customizer, LLM-judge evaluation and promotion of candidate NIMs. It needs six H100 or A100 GPUs, or two with a remote judge, and is tied to no reference architecture.',
+    blurb: 'NVIDIA\'s blueprint (updated April 2026): a loop of log ingestion, LoRA fine-tuning with NeMo Customizer, LLM-judge evaluation and promotion of candidate NIMs. It needs six H100 or A100 GPUs, or two with a remote judge, and is tied to no reference architecture. Its GitHub README says it is no longer actively maintained and new production use is not recommended.',
     bom: [
       'NeMo Customizer for LoRA fine-tuning, and NeMo Evaluator with an LLM judge',
       'NIM microservices for the candidate models',
@@ -290,7 +290,7 @@ const NVIDIA_LINKS = [
   L('ncp-gb300-provider', 'quantum-x', 'composes', 'East-west is InfiniBand or Spectrum-X'),
   L('ncp-gb300-provider', 'k8s-platforms', 'composes', 'One managed Kubernetes cluster per tenant'),
   S('ncp-gb300-provider', 'k8s-operators', 'composes', 'The GPU and Network Operators are the NVIDIA components it names'),
-  L('ncp-gb300-provider', 'certified-storage', 'composes', 'The requirements specify per-tenant storage; the Certified Storage NCP tier tests tenant isolation and quality of service, but this page does not name it', 'check'),
+  L('ncp-gb300-provider', 'certified-storage', 'composes', 'Storage requirement STO-3 is Certified Storage Platforms from Partners'),
     L('dgx-superpod', 'dgx', 'composes', 'DGX B200 / B300 are among the configurations'),
   L('dgx-superpod', 'quantum-x', 'composes', 'Quantum-X800 compute fabric'),
   L('dgx-superpod', 'spectrum-x', 'composes', 'SN5610 storage and in-band switches'),

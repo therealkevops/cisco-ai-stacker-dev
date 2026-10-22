@@ -391,8 +391,8 @@ export const NVIDIA_DETAILS = {
       f('Agent Toolkit', 'Framework-agnostic profiling, evaluation and observability for agentic systems.'),
       f('NeMo Platform', 'The 26.3 release is a single Helm chart for Kubernetes with a new CLI and SDK.'),
     ],
-    [['NeMo documentation', NV.nemo]],
-    'NVIDIA\'s archived docs say NeMo Microservices will be sunset on 1 October 2026, with development moving to the NeMo Platform. Microservice names such as Customizer, Evaluator, Guardrails and Retriever are therefore in transition.',
+    [['NeMo documentation', NV.nemo], ['NeMo Customizer reference', NV.nemoCustomizer]],
+    'NeMo Microservices was sunset on 1 October 2026, with development moving to the NeMo Platform, now at version 0.x with no stated general availability. The documentation hub still lists the old microservices, so names such as Customizer, Evaluator, Guardrails and Retriever are in transition.',
   ),
   'ai-blueprints': d(
     'Workflows and code samples for building AI applications from the ground up. AI Enterprise includes the blueprints with reference code, sample data and Helm charts.',

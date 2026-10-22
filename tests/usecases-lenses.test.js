@@ -123,3 +123,44 @@ test('the new Cisco designs are published documents with sources, and the heavy 
   const s = c.summarise(c.assess('multi-tenant-ai-cloud', 'saf-rackscale'));
   assert.ok(s.required.met > 0 && s.required.met < s.required.total);
 });
+
+for (const [lens, m] of Object.entries(MODELS)) {
+  test(`${lens}: each use case says where to read next, what the map leaves out and what to ask the vendor`, () => {
+    for (const u of m.cases) {
+      assert.ok(u.refs?.length >= 2, `${u.id}: reading links`);
+      assert.equal(new Set(u.refs.map(([, url]) => url)).size, u.refs.length, `${u.id}: a link is repeated`);
+      for (const [label, url] of u.refs) {
+        assert.ok(label.length > 4, `${u.id}: link label`);
+        assert.match(url, /^https:\/\/[^\s]+$/, `${u.id}: ${url}`);
+      }
+      assert.ok(u.offMap?.length >= 1, `${u.id}: what the map leaves out`);
+      for (const o of u.offMap) assert.ok(o.name.length > 3 && o.note.length > 20, `${u.id}/${o.name}`);
+      assert.ok(u.questions?.length >= 2, `${u.id}: questions for the vendor`);
+      for (const q of u.questions) assert.ok(q.endsWith('?') && q.length > 30, `${u.id}: ${q}`);
+      for (const s of u.sizing || []) {
+        assert.ok(s.text.length > 30, `${u.id}: sizing`);
+        assert.match(s.url, /^https:\/\//, `${u.id}: sizing source`);
+      }
+    }
+  });
+}
+
+test('wording that earlier checks found wrong stays corrected', () => {
+  const c = MODELS.cisco;
+  const n = MODELS.nvidia;
+  // Cisco's case study does not contain the quotation an earlier draft attributed to it.
+  assert.doesNotMatch(c.caseById.get('agentic-ai').caveat, /"No agent workload was tested"/);
+  // Hybrid Mesh Firewall on BlueField was announced, not shipped.
+  assert.doesNotMatch(c.caseById.get('agentic-ai').caveat + c.caseById.get('secure-private-ai').caveat, /says it is available/);
+  // Cisco's own Cloud RAs agree on which switch is NCP compliant.
+  assert.doesNotMatch(c.caseById.get('multi-tenant-ai-cloud').caveat, /disagree/);
+  assert.match(c.caseById.get('multi-tenant-ai-cloud').caveat, /N9164E-NS4-O/);
+  // Nexus Dashboard's Slurm integration is published by Cisco.
+  assert.doesNotMatch(c.caseById.get('ai-factory-operations').caveat, /only in third-party/);
+  // The Data Flywheel blueprint is no longer maintained, and the NVL72 reference architecture names Mission Control.
+  assert.match(n.nodeById.get('nv-data-flywheel').blurb, /no longer actively maintained/);
+  assert.ok(n.membersOf('era-nvl72').has('mission-control'));
+  assert.ok(!n.links.some((l) => l.a === 'era-nvl72' && l.b === 'base-command-manager'), 'the NVL72 page names Mission Control, which brings Base Command Manager with it, not Base Command Manager itself');
+  // AI Enterprise is a stated prerequisite of the validated AI-Q deployment.
+  assert.equal(n.caseById.get('agentic-ai').needs.find((x) => x.products.includes('nvidia-ai-enterprise')).role, 'required');
+});

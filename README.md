@@ -51,6 +51,8 @@ Line styles live in [`src/map/linkstyle.js`](src/map/linkstyle.js): nine relatio
 
 ### Accuracy
 
+Every use case was re-checked against its sources on 21 and 22 October 2026, with each claim marked confirmed, corrected or unverified, and the long vendor pages that earlier passes could only partly read were read in full where the site allowed. The corrections are in the data, and the tests pin the ones that mattered (for example that Hybrid Mesh Firewall on BlueField was announced, not shipped, and that the NVL72 reference architecture names Mission Control). Each use case now lists what to read next, published sizes, what the map does not cover, and questions to put to the vendor.
+
 The NVIDIA entries were read from NVIDIA's pages through a summarising fetch tool, so wording is paraphrase and exact figures are worth checking against the linked pages before quoting. Roadmap items (Spectrum-X Photonics, Quantum-X Photonics, BlueField-4, STX and CMX, Sentry), the October 2026 NeMo Microservices sunset notice and pages that could not be read are called out in each entry's `caveat`.
 
 Cisco renames and repackages products often, and some details in the public sources disagree (for example which ASIC is in the Nexus 9364E-SG2). Anything not confirmed is marked `check` and shows as unverified. Re-check before using this in front of a customer. Which primitive a product belongs to, and the order of the hexes, are editorial choices, not Cisco's.

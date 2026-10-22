@@ -34,6 +34,7 @@ export const NV = {
   aieMatrix: 'https://docs.nvidia.com/ai-enterprise/release-8/latest/support/support-matrix-8/8.2.html',
   nim: 'https://docs.nvidia.com/nim/index.html',
   nemo: 'https://docs.nvidia.com/nemo/index.html',
+  nemoCustomizer: 'https://docs.nvidia.com/nemo-platform/documentation/customizer-reference',
   guardrails: 'https://docs.nvidia.com/nemo/guardrails/latest/index.html',
   blueprints: 'https://build.nvidia.com/blueprints',
   dynamo: 'https://developer.nvidia.com/dynamo',
