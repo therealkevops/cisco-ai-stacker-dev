@@ -134,23 +134,59 @@ const hrefTo = (lens, id) => {
   return m.nodeById.get(id).kind === 'design' ? m.href.design(id) : m.href.product(id);
 };
 
-// For an open-source entry: the vendor products and designs it is the open core of, used inside, or an alternative to.
-function AlsoIn({ node }) {
-  if (!node.alsoIn?.length) return null;
-  return (
-    <section aria-labelledby="also-h">
-      <h2 id="also-h" className="label">In the other focuses</h2>
+// Cross-focus links come in two kinds. A documented one is named in the vendor's own pages (it carries
+// the page and the date it was read). A counterpart is this app's reading that two things do a similar
+// job, and says so.
+function EcoSection({ id, documentedTitle, alikeTitle, items }) {
+  const documented = items.filter((x) => x.basis === 'documented');
+  const alike = items.filter((x) => x.basis !== 'documented');
+  const rows = (list) => (
+    <>
       <ul className="list stack">
-        {node.alsoIn.map((x) => (
-          <li key={x.lens + x.id}>
-            <a href={hrefTo(x.lens, x.id)}>{MODELS[x.lens].nodeById.get(x.id).name}</a>
+        {list.map((x) => (
+          <li key={x.key}>
+            <a href={x.href}>{x.name}</a>
             <span className="sub">{x.relation}</span>
           </li>
         ))}
       </ul>
-      {node.alsoIn.map((x) => <p key={x.id} className="fineprint">{x.note}</p>)}
-    </section>
+      {list.map((x) => (
+        <p key={x.key} className="fineprint">
+          {x.note}{' '}
+          {x.url && <a className="srclink" href={x.url} target="_blank" rel="noreferrer">source{x.read ? `, read ${x.read}` : ''}</a>}
+        </p>
+      ))}
+    </>
   );
+  return (
+    <>
+      {documented.length > 0 && (
+        <section aria-labelledby={`${id}-doc-h`}>
+          <h2 id={`${id}-doc-h`} className="label">{documentedTitle}</h2>
+          {rows(documented)}
+        </section>
+      )}
+      {alike.length > 0 && (
+        <section aria-labelledby={`${id}-alike-h`}>
+          <h2 id={`${id}-alike-h`} className="label">{alikeTitle}</h2>
+          <p className="sublabel">Our reading, not like-for-like</p>
+          {rows(alike)}
+        </section>
+      )}
+    </>
+  );
+}
+
+// For an open-source entry: the vendor products and designs that name it, and the ones it resembles.
+function AlsoIn({ node }) {
+  if (!node.alsoIn?.length) return null;
+  const items = node.alsoIn.map((x) => ({
+    ...x,
+    key: x.lens + x.id,
+    href: hrefTo(x.lens, x.id),
+    name: `${MODELS[x.lens].data.name}: ${MODELS[x.lens].nodeById.get(x.id).name}`,
+  }));
+  return <EcoSection id="also" documentedTitle="Where Cisco and NVIDIA name it" alikeTitle="In the other focuses" items={items} />;
 }
 
 // For a vendor product or design: the open-source entries that point at it.
@@ -158,20 +194,8 @@ function Counterparts({ id }) {
   const { data } = useModel();
   const found = counterparts(data.id, id);
   if (!found.length) return null;
-  return (
-    <section aria-labelledby="cp-h">
-      <h2 id="cp-h" className="label">Open-source counterparts</h2>
-      <ul className="list stack">
-        {found.map((c) => (
-          <li key={c.node.id}>
-            <a href={c.from.href.product(c.node.id)}>{c.node.name}</a>
-            <span className="sub">{c.relation}</span>
-          </li>
-        ))}
-      </ul>
-      {found.map((c) => <p key={c.node.id} className="fineprint">{c.note}</p>)}
-    </section>
-  );
+  const items = found.map((c) => ({ ...c, key: c.node.id, href: c.from.href.product(c.node.id), name: c.node.name }));
+  return <EcoSection id="cp" documentedTitle="Open-source projects its documents name" alikeTitle="Open-source counterparts" items={items} />;
 }
 
 function ProductPanel({ id, onHover }) {
