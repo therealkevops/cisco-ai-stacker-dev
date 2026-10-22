@@ -471,6 +471,117 @@ export const PRODUCT_DETAILS = {
       ['Nutanix delivers a complete platform for the agentic AI era', 'https://www.hpcwire.com/off-the-wire/nutanix-delivers-complete-platform-for-the-agentic-ai-era/'],
     ],
   },
+
+  'ucs-c-series': {
+    about:
+      'General-purpose UCS rack servers. Cisco\'s AI POD data sheet names the C240 M8 and C245 M8 beside the C885A and C845A as server options, and a partner white paper names the C220 M8 and C225 M8.',
+    features: [
+      f('Named in the AI POD data sheet', 'The data sheet, updated April 2026, lists them with the GPU servers.'),
+      f('Managed through Intersight', 'The same lifecycle and policy management as the other UCS servers.'),
+      f('For lighter AI work', 'Suited to the supporting roles around GPU servers; the sources read do not say which role each plays.'),
+    ],
+    caveat: 'The data sheet names the models but this pass did not read their GPU counts or roles, so check the current data sheet before sizing.',
+    refs: [['Cisco AI PODs data sheet', 'https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-x-series-modular-system/ai-pods-ds.html']],
+  },
+  x580p: {
+    about:
+      'The current PCIe node for UCS X-Series, which holds up to four dual-slot GPUs and pairs with X210c M8 and X215c M8 compute nodes through the X9516 X-Fabric. It replaces the older X440p.',
+    features: [
+      f('Up to four dual-slot GPUs', 'Gen5 PCIe, so GPUs sit in a modular chassis rather than a rack server.'),
+      f('X9516 X-Fabric', 'Connects the GPU node to compute nodes in the chassis.'),
+      f('In the 2026 FlashStack guide', 'Cisco\'s August 2026 FlashStack AI POD design guide names it.'),
+    ],
+    caveat: 'No general-availability date was found, and the older X440p on the map is a different, earlier node.',
+    refs: [['FlashStack AI POD design guide', 'https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flashstack_aipod_secure_enterprise_ai_factories_design_guide.html']],
+  },
+  'unified-edge': {
+    about:
+      'An integrated edge platform for AI inferencing, announced in November 2025. A UCS XE9305 chassis holds XE130c and XE150c compute nodes with an optional GPU, and a Cisco 8255 Secure Router Node, all managed through Intersight.',
+    features: [
+      f('XE130c M8 node', 'Intel Xeon 6 SoC with an optional GPU such as the L4.'),
+      f('XE150c M8 node', 'Announced March 2026 and orderable in the third quarter, with a full-height GPU such as the RTX PRO 6000 or L40S.'),
+      f('Cisco 8255 router node', 'Announced June 2026 and orderable from September 2026.'),
+      f('Intersight management', 'Fleet management for many edge sites.'),
+    ],
+    caveat: 'Cisco said general availability was expected by the end of 2025; this pass did not confirm it. The FAQ also gives different core counts for the XE130c (10 and 12).',
+    refs: [
+      ['Unified Edge FAQ', 'https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/unified-edge/unified-edge-faq.html'],
+      ['Cisco newsroom, November 2025', 'https://newsroom.cisco.com/c/r/newsroom/en/us/a/y2025/m11/cisco-unified-edge-platform-for-distributed-agentic-ai-workloads.html'],
+    ],
+  },
+  'cisco-8223': {
+    about:
+      'A 3RU fixed router with 64 ports of 800G on Silicon One P200 (51.2 Tb/s, deep buffer), positioned for scale-across: connecting AI data centers to each other. Cisco says it is shipping to initial hyperscalers.',
+    features: [
+      f('64 x 800GE', 'A 51.2 Tb/s router on the Silicon One P200.'),
+      f('Coherent optics to 1,000 km', 'Supports 800G coherent optics for links between sites.'),
+      f('SONiC first', 'It launched with SONiC; Cisco says IOS XR is planned.'),
+    ],
+    caveat: 'Announced 8 October 2025 and shipping only to initial hyperscalers per Cisco. No AI POD or Secure AI Factory document read names it, and the 8100 and 8200 families were not confirmed.',
+    refs: [['Cisco newsroom, October 2025', 'https://newsroom.cisco.com/c/r/newsroom/en/us/a/y2025/m10/cisco-sets-benchmark-with-industry-most-scalable-efficient-51-2t-routing-systems-for-distributed-ai-workloads.html']],
+  },
+  hypershield: {
+    about:
+      'Distributed security enforcement that Cisco lists as part of Hybrid Mesh Firewall. The rack-scale Secure AI Factory overview names it for segmenting east-west traffic between GPU nodes, with Isovalent.',
+    features: [
+      f('Available on Smart Switches', 'Cisco says it is available now on Nexus 9300 Series Smart Switches.'),
+      f('East-west segmentation', 'Named for separating GPU nodes in the rack-scale Secure AI Factory.'),
+      f('Optional in the FlashStack guide', 'The August 2026 guide lists it as optional, licensed on the N9324C-SE1U Smart Switch.'),
+    ],
+    caveat: 'Enforcement on NVIDIA BlueField DPUs is described as a future enhancement with no date, and a Cisco blog of 21 October 2026 says it is still in development.',
+    refs: [
+      ['Rack-scale Secure AI Factory overview', 'https://www.cisco.com/c/en/us/solutions/collateral/artificial-intelligence/secure-ai-factory-nvidia-rackscale-enterprise-so.html'],
+      ['Cisco and NVIDIA secure AI factory, March 2025', 'https://newsroom.cisco.com/c/r/newsroom/en/us/a/y2025/m03/cisco-and-nvidia-secure-AI-factory.html'],
+    ],
+  },
+  'secure-access': {
+    about:
+      'Cisco\'s cloud security service for access to the internet and applications. Its AI Access features cover finding shadow AI, blocking or redirecting it, data loss prevention and guardrails, and the March 2026 release adds MCP policy enforcement for agents.',
+    features: [
+      f('Shadow AI discovery', 'Finds which AI services employees use.'),
+      f('Block or redirect', 'Controls access to AI services by policy.'),
+      f('DLP and guardrails', 'Protects data sent to AI services.'),
+      f('MCP policy enforcement', 'Announced March 2026 for agents, with no date given.'),
+    ],
+    caveat: 'Not named in any AI POD or Secure AI Factory design. Licensing sources conflict: one Cisco blog says no extra cost, a 2025 training deck says the Advantage tier.',
+    refs: [['Secure Access AI Access', 'https://www.cisco.com/site/us/en/products/security/secure-access/ai-access/index.html']],
+  },
+  'cloud-control': {
+    about:
+      'Cisco\'s management layer named in the rack-scale Secure AI Factory overview, with AgenticOps, working with Nexus One. Network management is available today through Nexus One; compute management through Intersight is slated for the fourth quarter of 2026.',
+    features: [
+      f('Network management', 'Available today through Nexus One, per the September 2026 overview.'),
+      f('Compute management', 'Slated for the fourth quarter of 2026 through Intersight and Nexus One.'),
+      f('AgenticOps', 'Cisco pairs it with agent-assisted operations.'),
+    ],
+    caveat: 'Unconfirmed as a platform product: only one Cisco document read names it, and part of it is slated for late 2026.',
+    refs: [['Rack-scale Secure AI Factory overview', 'https://www.cisco.com/c/en/us/solutions/collateral/artificial-intelligence/secure-ai-factory-nvidia-rackscale-enterprise-so.html']],
+  },
+  'data-fabric': {
+    about:
+      'An architecture on the Splunk platform, introduced in September 2025, that turns machine data into data for AI. Splunk says its Machine Data Lake, Catalog, Agent Launchpad and expanded Federated Search were generally available as of August 2026.',
+    features: [
+      f('Machine Data Lake', 'Stores machine data for analysis and for AI.'),
+      f('Federated Search', 'Searches data where it lives; some connectors were still rolling out.'),
+      f('Catalog and Agent Launchpad', 'Describes the data and lets agents use it.'),
+    ],
+    caveat: 'Cisco frames this as data for AI, not as part of an AI POD or Secure AI Factory design, so its place under the Data primitive is this app\'s choice. The AI Canvas integration was promised for 2026 and not confirmed.',
+    refs: [['Cisco Data Fabric, September 2025', 'https://newsroom.cisco.com/c/r/newsroom/en/us/a/y2025/m09/cisco-data-fabric-transforms-machine-data-into-ai-ready-intelligence.html']],
+  },
+  appdynamics: {
+    about:
+      'Application performance monitoring from Splunk. Its Observability for AI documentation covers token use, latency, vector databases and GPU monitoring for applications built on OpenAI, LangChain, Ollama and Bedrock.',
+    features: [
+      f('LLM monitoring', 'Tracks token use and latency of language model calls.'),
+      f('Vector databases', 'Monitors retrieval backends.'),
+      f('GPU monitoring page', 'Covers GPU metrics in its documentation.'),
+    ],
+    caveat: 'No Cisco AI POD or Secure AI Factory document names it; the Cisco blog on Splunk for the Secure AI Factory names only Splunk Observability Cloud. One search summary said an agent-monitoring feature is being deprecated, which this pass did not confirm.',
+    refs: [
+      ['Splunk AppDynamics', 'https://www.splunk.com/en_us/products/splunk-appdynamics.html'],
+      ['Observability for AI documentation', 'https://help.splunk.com/en/appdynamics-saas/observability-for-ai/25.10.0/splunk-appdynamics-observability-for-ai/ai-agent-monitoring'],
+    ],
+  },
 };
 
 // Background for the primitives. This is explanation, not vendor claims.

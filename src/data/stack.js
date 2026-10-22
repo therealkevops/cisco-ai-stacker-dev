@@ -33,6 +33,17 @@ export const SOURCES = {
   splunkAiPod: 'https://www.splunk.com/en_us/blog/partners/bringing-the-power-of-ai-to-where-your-data-lives-a-new-milestone-with-cisco-and-nvidia.html',
   splunkAiPodMonitoring: 'https://help.splunk.com/en/splunk-observability-cloud/observability-for-ai/splunk-ai-infrastructure-monitoring/set-up-ai-infrastructure-monitoring/cisco-ai-pods',
   cloudControlGa: 'https://blogs.cisco.com/ai/cisco-cloud-control-us-general-availability',
+  c8223: 'https://newsroom.cisco.com/c/r/newsroom/en/us/a/y2025/m10/cisco-sets-benchmark-with-industry-most-scalable-efficient-51-2t-routing-systems-for-distributed-ai-workloads.html',
+  rackscaleSo: 'https://www.cisco.com/c/en/us/solutions/collateral/artificial-intelligence/secure-ai-factory-nvidia-rackscale-enterprise-so.html',
+  aiPodDs: 'https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-x-series-modular-system/ai-pods-ds.html',
+  flashstackGuide: 'https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/UCS_CVDs/flashstack_aipod_secure_enterprise_ai_factories_design_guide.html',
+  secureAccessAi: 'https://www.cisco.com/site/us/en/products/security/secure-access/ai-access/index.html',
+  unifiedEdge: 'https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/unified-edge/unified-edge-faq.html',
+  unifiedEdgeNews: 'https://newsroom.cisco.com/c/r/newsroom/en/us/a/y2025/m11/cisco-unified-edge-platform-for-distributed-agentic-ai-workloads.html',
+  dataFabric: 'https://newsroom.cisco.com/c/r/newsroom/en/us/a/y2025/m09/cisco-data-fabric-transforms-machine-data-into-ai-ready-intelligence.html',
+  appdynamics: 'https://www.splunk.com/en_us/products/splunk-appdynamics.html',
+  appdObsAi: 'https://help.splunk.com/en/appdynamics-saas/observability-for-ai/25.10.0/splunk-appdynamics-observability-for-ai/ai-agent-monitoring',
+  safNewsroom2025: 'https://newsroom.cisco.com/c/r/newsroom/en/us/a/y2025/m03/cisco-and-nvidia-secure-AI-factory.html',
 };
 
 // The primitives: what an AI workload needs, each delivered by a set of products. `sector` is which
@@ -234,6 +245,26 @@ export const NODES = [
     blurb: 'Network path and internet visibility, one of the telemetry sources AI Canvas draws on.' },
   { id: 'agntcy', name: 'AGNTCY', primitive: 'ops', vendor: 'cisco', status: 'sourced', url: SOURCES.agntcy,
     blurb: 'Open Internet of Agents project from Outshift, since donated to the Linux Foundation. Building blocks: identity, discovery, messaging, observability.' },
+
+  // Added after a second check of Cisco's own pages for gaps (October 2026)
+  { id: 'ucs-c-series', name: 'UCS C240 M8 and C245 M8', short: 'UCS C240/C245', primitive: 'compute', vendor: 'cisco', status: 'sourced', url: SOURCES.aiPodDs,
+    blurb: 'General-purpose UCS rack servers that Cisco\'s AI POD data sheet names as server options beside the C885A and C845A.' },
+  { id: 'x580p', name: 'UCS X580p PCIe node', short: 'UCS X580p', primitive: 'compute', vendor: 'cisco', status: 'sourced', url: SOURCES.flashstackGuide,
+    blurb: 'The current GPU node for UCS X-Series: up to four dual-slot GPUs, joined to X210c and X215c compute nodes through the X9516 fabric. Named in the 2026 FlashStack AI POD guide.' },
+  { id: 'unified-edge', name: 'Cisco Unified Edge', primitive: 'compute', vendor: 'cisco', status: 'sourced', url: SOURCES.unifiedEdge,
+    blurb: 'An integrated edge platform for AI inferencing: a UCS XE9305 chassis with compute nodes that take an optional GPU, plus a Cisco 8255 router node, managed through Intersight.' },
+  { id: 'cisco-8223', name: 'Cisco 8223', primitive: 'network', vendor: 'cisco', status: 'sourced', url: SOURCES.c8223,
+    blurb: 'A 64-port 800G router on Silicon One P200, positioned for scale-across: joining AI data centers over distances of up to 1,000 km with coherent optics.' },
+  { id: 'hypershield', name: 'Cisco Hypershield', primitive: 'security', vendor: 'cisco', status: 'sourced', url: SOURCES.rackscaleSo,
+    blurb: 'Distributed security enforcement in the network and on the host. In the Secure AI Factory it segments east-west traffic between GPU nodes, and runs on N9300 Smart Switches today.' },
+  { id: 'secure-access', name: 'Cisco Secure Access', primitive: 'security', vendor: 'cisco', status: 'sourced', url: SOURCES.secureAccessAi,
+    blurb: 'Cloud security for access to the internet and applications. Its AI Access features discover and control employees\' use of AI services, which no AI POD design covers.' },
+  { id: 'cloud-control', name: 'Cisco Cloud Control', primitive: 'platform', vendor: 'cisco', status: 'check', url: SOURCES.rackscaleSo,
+    blurb: 'Cisco\'s management layer for the rack-scale Secure AI Factory, working with Nexus One. Network management is available; compute management is slated for the last quarter of 2026.' },
+  { id: 'data-fabric', name: 'Cisco Data Fabric', primitive: 'data', vendor: 'cisco', status: 'check', url: SOURCES.dataFabric,
+    blurb: 'An architecture on the Splunk platform that turns machine data into data for AI, with a Machine Data Lake and federated search. Cisco does not tie it to an AI POD design.' },
+  { id: 'appdynamics', name: 'Splunk AppDynamics', primitive: 'ops', vendor: 'cisco', status: 'sourced', url: SOURCES.appdynamics,
+    blurb: 'Application performance monitoring, with monitoring for AI applications and language models: token use, latency and vector databases. No Cisco AI design names it.' },
 ];
 
 // Integration types. A link is directional (a to b), and `from` / `to` are how each end reads: for
@@ -428,4 +459,19 @@ export const LINKS = [
   L('cisco-live-soc', 'foundation-ai', 'composes', 'The Reasoning model, integrated into XDR through a playbook'),
   L('cisco-live-soc', 'xdr', 'composes', 'Tier 1 and 2 investigations'),
   L('cisco-live-soc', 'splunk-es', 'composes', 'Tier 3 and the SIEM'),
+
+  // Gaps found in a second check of Cisco's pages
+  L('cisco-8223', 'silicon-one', 'composes', 'Built on the Silicon One P200'),
+  L('hybrid-mesh-fw', 'hypershield', 'composes', 'Cisco lists Hypershield as part of Hybrid Mesh Firewall'),
+  L('hypershield', 'nexus-9000', 'runs', 'Available on Nexus 9300 Series Smart Switches'),
+  L('saf-rackscale', 'hypershield', 'composes', 'Named for east-west segmentation of GPU nodes, with Isovalent'),
+  L('ai-pod', 'ucs-c-series', 'composes', 'Named in the AI POD data sheet as a server option'),
+  L('intersight', 'ucs-c-series', 'manages', 'Server lifecycle and policy'),
+  L('ucs-x', 'x580p', 'composes', 'The GPU node for UCS X-Series'),
+  L('intersight', 'unified-edge', 'manages', 'Cisco says Unified Edge is managed through Intersight'),
+  L('unified-edge', 'nvidia-gpu', 'composes', 'Compute nodes take an optional GPU, such as the L4 or RTX PRO 6000'),
+  L('appdynamics', 'splunk-obs', 'feeds', 'Both are Splunk observability products; no document read describes how they work together', 'check'),
+  L('data-fabric', 'splunk-es', 'feeds', 'Cisco says Data Fabric is powered by the Splunk platform that Enterprise Security also runs on; no direct integration is documented', 'check'),
+  L('secure-access', 'ai-defense', 'feeds', 'Both govern AI use, one at the user and one at the application; no document read links them', 'check'),
+  L('cloud-control', 'intersight', 'manages', 'Compute management through Intersight and Nexus One is slated for the fourth quarter of 2026', 'check'),
 ];
