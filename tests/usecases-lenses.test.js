@@ -56,16 +56,18 @@ for (const [lens, m] of Object.entries(MODELS)) {
 
 test('a use case with no published test of its scenario is a draft, and says so', () => {
   assert.equal(MODELS.cisco.caseById.get('agentic-ai').status, 'draft');
-  assert.match(MODELS.cisco.caseById.get('agentic-ai').caveat, /No agent workload was tested/);
+  assert.match(MODELS.cisco.caseById.get('agentic-ai').caveat, /does not mention agentic AI/);
   assert.match(MODELS.cisco.caseById.get('secure-private-ai').caveat, /not certified|not a fully hardened/i);
+  assert.equal(MODELS.nvidia.caseById.get('secure-private-ai').status, 'draft');
   assert.match(MODELS.nvidia.caseById.get('secure-private-ai').caveat, /not certification/i);
-  assert.match(MODELS.nvidia.caseById.get('enterprise-ai-cluster').caveat, /tables of contents/i);
+  assert.match(MODELS.nvidia.caseById.get('enterprise-ai-cluster').caveat, /no dedicated security chapter/i);
 });
 
 test('the conflict between the two vendors\' BlueField security claims is flagged on both sides', () => {
   assert.match(MODELS.cisco.caseById.get('agentic-ai').caveat, /BlueField/);
-  assert.match(MODELS.cisco.nodeById.get('hybrid-mesh-fw') && MODELS.cisco.caseById.get('secure-private-ai').needs.find((n) => n.products.includes('hybrid-mesh-fw')).why, /conflict|in development/i);
+  assert.match(MODELS.cisco.caseById.get('secure-private-ai').needs.find((n) => n.products.includes('hybrid-mesh-fw')).why, /in development/i);
   assert.match(MODELS.nvidia.caseById.get('agentic-ai').needs.find((n) => n.products.includes('sentry')).why, /announced/i);
+  assert.ok(MODELS.nvidia.caseById.get('agentic-ai').needs.find((n) => n.products.includes('nvidia-ai-enterprise')).role === 'required', 'the validated AI-Q deployment lists an AI Enterprise subscription as a prerequisite');
 });
 
 test('NVIDIA\'s use cases rest on NVIDIA documents, each of which is a design on the map', () => {

@@ -77,5 +77,9 @@ export const NV = {
   socTriageBlog: 'https://developer.nvidia.com/blog/augmenting-security-operations-centers-with-accelerated-alert-triage-and-llm-agents-using-nvidia-morpheus/',
   dataFlywheel: 'https://build.nvidia.com/nvidia/build-an-enterprise-data-flywheel',
   ncpGb300: 'https://docs.nvidia.com/dsx/ncp/inference-provider-requirements/home',
+  eraHgxB300: 'https://docs.nvidia.com/enterprise-reference-architectures/hgx-ai-factory/latest/abstract.html',
+  eraHgxH200: 'https://docs.nvidia.com/enterprise-reference-architectures/hgx-ai-factory-h100-h200-b200/latest/abstract.html',
+  eraNvl72: 'https://docs.nvidia.com/enterprise-reference-architectures/nvl72-ai-factory/latest/abstract.html',
+  eraRagSizing: 'https://docs.nvidia.com/enterprise-reference-architectures/enterprise-rag-retrieval-scaling-and-sizing-guide/latest/rag-sizing-guidelines.html',
   eraK8sGuide: 'https://docs.nvidia.com/enterprise-reference-architectures/upstream-kubernetes-enterprise-ra-deployment-guide/latest/overview.html',
 };
