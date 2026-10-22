@@ -140,9 +140,9 @@ export default function HexMap({ model, route, hoverId }) {
 
       {NODES.filter((n) => !n.kind).map((n) => {
         const c = layout.get(n.id);
-        const cls = ['hex', 'product', `p-${n.primitive}`, n.vendor === model.focus ? 'own' : 'partner', n.status === 'check' ? 'unverified' : '', stateOf(n.id), needClass(n.id)].filter(Boolean).join(' ');
+        const cls = ['hex', 'product', `p-${n.primitive}`, n.vendor === model.focus ? 'own' : 'partner', n.status === 'check' || n.dashed ? 'unverified' : '', stateOf(n.id), needClass(n.id)].filter(Boolean).join(' ');
         return (
-          <a key={n.id} href={href.product(n.id)} aria-label={`${n.name}, ${n.vendor === model.focus ? model.name : 'partner'}${n.status === 'check' ? ', not yet confirmed' : ''}`}>
+          <a key={n.id} href={href.product(n.id)} aria-label={`${n.name}, ${n.vendor === model.focus ? model.name : 'partner'}${n.status === 'check' ? ', not yet confirmed' : ''}${n.dashed ? ', ' + (model.data.dashedMeans || 'dashed') : ''}`}>
             <g className={cls} transform={`translate(${c.x},${c.y})`}>
               <title>{n.name}</title>
               <polygon points={hexPoints(0, 0, SIZE * GAP).map((q) => q.join(',')).join(' ')} />

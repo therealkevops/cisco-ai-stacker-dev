@@ -3,13 +3,16 @@ import assert from 'node:assert/strict';
 import { MODELS } from '../src/data/model.js';
 import { SOURCES } from '../src/data/stack.js';
 import { NV } from '../src/data/nvidia-urls.js';
+import { OS } from '../src/data/oss-urls.js';
 
-const sourceUrls = { cisco: new Set(Object.values(SOURCES)), nvidia: new Set(Object.values(NV)) };
+const sourceUrls = { cisco: new Set(Object.values(SOURCES)), nvidia: new Set(Object.values(NV)), oss: new Set(Object.values(OS)) };
 
 test('every use case exists in both focuses, so each scenario can be read from either vendor\'s side', () => {
   const ids = (m) => m.cases.map((u) => u.id).sort();
   assert.deepEqual(ids(MODELS.cisco), ids(MODELS.nvidia));
   assert.ok(ids(MODELS.cisco).length >= 8);
+  // The open-source focus has no AI-assisted security operations: no project or published design covers it.
+  assert.deepEqual(ids(MODELS.cisco).filter((id) => id !== 'ai-security-operations'), ids(MODELS.oss));
   for (const id of ids(MODELS.cisco)) {
     const [a, b] = [MODELS.cisco.caseById.get(id), MODELS.nvidia.caseById.get(id)];
     assert.equal(a.name, b.name, `${id}: the scenario keeps one name`);

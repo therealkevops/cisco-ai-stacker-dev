@@ -7,6 +7,7 @@ import { PRIMITIVES as C_PRIMITIVES, NODES as C_NODES, LINKS as C_LINKS, LINK_TY
 import { USE_CASES as C_USE_CASES } from './usecases.js';
 import { PRODUCT_DETAILS as C_DETAILS, PRIMITIVE_DETAILS as C_PRIM_DETAILS } from './details.js';
 import { NVIDIA } from './nvidia.js';
+import { OSS } from './oss.js';
 
 const CISCO = {
   id: 'cisco', name: 'Cisco', focus: 'cisco', title: 'The Cisco AI Stack', primitives: C_PRIMITIVES, nodes: C_NODES, links: C_LINKS, linkTypes: C_LINK_TYPES, cases: C_USE_CASES,
@@ -172,7 +173,15 @@ const nodeById = new Map(NODES.map((n) => [n.id, n]));
     nodeById, primitiveById, typeById, caseById, detailsOf, primitiveDetailsOf, products, designs, productsIn, phrase, linksOf, productLinks, linksBetweenProducts, membersOf, coverage, designsIncluding, primitiveLinks, assess, summarise, caseProducts, casesNeeding, casesDelivered, layoutOrder, href, resolve };
 }
 
-export const MODELS = { cisco: buildModel(CISCO), nvidia: buildModel(NVIDIA) };
+export const MODELS = { cisco: buildModel(CISCO), nvidia: buildModel(NVIDIA), oss: buildModel(OSS) };
+
+// Open-source entries that say they are the open core of, used inside or an open alternative to a
+// product or design in another focus (`alsoIn` on the open-source node), seen from that other focus.
+export function counterparts(lens, id) {
+  return Object.values(MODELS).flatMap((m) =>
+    m.nodes.flatMap((n) => (n.alsoIn || []).filter((a) => a.lens === lens && a.id === id).map((a) => ({ ...a, from: m, node: n }))),
+  );
+}
 export const LENS_IDS = Object.keys(MODELS);
 
 // The Cisco lens, under the names the rest of the code uses.

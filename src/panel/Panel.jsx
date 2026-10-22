@@ -1,13 +1,13 @@
 import React from 'react';
 import { LINK_STYLES, styleOf } from '../map/linkstyle.js';
 import { LineSample } from '../map/LineKey.jsx';
-import { MODELS } from '../data/model.js';
+import { MODELS, counterparts } from '../data/model.js';
 
 // The lens being shown (Cisco or NVIDIA) is handed down by context, so every piece reads the same data.
 const ModelContext = React.createContext(null);
 const useModel = () => React.useContext(ModelContext);
 
-const VENDOR_NAMES = { cisco: 'Cisco', nvidia: 'NVIDIA', partner: 'Partner' };
+const VENDOR_NAMES = { cisco: 'Cisco', nvidia: 'NVIDIA', oss: 'Community or foundation project', partner: 'Partner' };
 
 function Dot({ vendor }) {
   const model = useModel();
@@ -34,9 +34,9 @@ function Legend({ useCase }) {
   return (
     <section className="legend" aria-label="Key">
       <h2 className="label">Key</h2>
-      <p><span className="key-hex own" aria-hidden="true" /> {data.name} product</p>
-      <p><span className="key-hex partner" aria-hidden="true" /> Partner product</p>
-      <p><span className="key-hex partner dashed" aria-hidden="true" /> Not yet confirmed against a public page</p>
+      <p><span className="key-hex own" aria-hidden="true" /> {data.ownLabel || `${data.name} product`}</p>
+      <p><span className="key-hex partner" aria-hidden="true" /> {data.otherLabel || 'Partner product'}</p>
+      <p><span className="key-hex partner dashed" aria-hidden="true" /> {data.dashedLabel || 'Not yet confirmed against a public page'}</p>
       {useCase && (
         <p className="key-lines">
           <em>Solid outline</em>: required. <em>Dashed outline</em>: recommended.
@@ -129,6 +129,51 @@ function Back() {
   return <a className="back" href={href.home}>Clear selection</a>;
 }
 
+const hrefTo = (lens, id) => {
+  const m = MODELS[lens];
+  return m.nodeById.get(id).kind === 'design' ? m.href.design(id) : m.href.product(id);
+};
+
+// For an open-source entry: the vendor products and designs it is the open core of, used inside, or an alternative to.
+function AlsoIn({ node }) {
+  if (!node.alsoIn?.length) return null;
+  return (
+    <section aria-labelledby="also-h">
+      <h2 id="also-h" className="label">In the other focuses</h2>
+      <ul className="list stack">
+        {node.alsoIn.map((x) => (
+          <li key={x.lens + x.id}>
+            <a href={hrefTo(x.lens, x.id)}>{MODELS[x.lens].nodeById.get(x.id).name}</a>
+            <span className="sub">{x.relation}</span>
+          </li>
+        ))}
+      </ul>
+      {node.alsoIn.map((x) => <p key={x.id} className="fineprint">{x.note}</p>)}
+    </section>
+  );
+}
+
+// For a vendor product or design: the open-source entries that point at it.
+function Counterparts({ id }) {
+  const { data } = useModel();
+  const found = counterparts(data.id, id);
+  if (!found.length) return null;
+  return (
+    <section aria-labelledby="cp-h">
+      <h2 id="cp-h" className="label">Open-source counterparts</h2>
+      <ul className="list stack">
+        {found.map((c) => (
+          <li key={c.node.id}>
+            <a href={c.from.href.product(c.node.id)}>{c.node.name}</a>
+            <span className="sub">{c.relation}</span>
+          </li>
+        ))}
+      </ul>
+      {found.map((c) => <p key={c.node.id} className="fineprint">{c.note}</p>)}
+    </section>
+  );
+}
+
 function ProductPanel({ id, onHover }) {
   const { nodeById, primitiveById, linksOf, designsIncluding, casesNeeding, detailsOf, linkTypes, href } = useModel();
   const node = nodeById.get(id);
@@ -149,6 +194,17 @@ function ProductPanel({ id, onHover }) {
       {node.status === 'check' && <p className="note">Not yet confirmed against a public page. Check before quoting.</p>}
       {!detail && <p className="src"><a href={node.url} target="_blank" rel="noreferrer">Source</a></p>}
 
+      {detail?.facts && (
+        <section aria-labelledby="facts-h">
+          <h2 id="facts-h" className="label">Licence and governance</h2>
+          <dl className="facts">
+            {detail.facts.map(([k, v]) => (
+              <React.Fragment key={k}><dt>{k}</dt><dd>{v}</dd></React.Fragment>
+            ))}
+          </dl>
+        </section>
+      )}
+
       {detail && (
         <section aria-labelledby="feat-h">
           <h2 id="feat-h" className="label">Most useful features</h2>
@@ -163,6 +219,9 @@ function ProductPanel({ id, onHover }) {
           <p className="fineprint">Features are as the vendor states them in the pages above, not independent measurements.</p>
         </section>
       )}
+
+      <AlsoIn node={node} />
+      <Counterparts id={id} />
 
       {inDesigns.length > 0 && (
         <section>
@@ -285,6 +344,8 @@ function DesignPanel({ id }) {
           )}
         </section>
       )}
+
+      <Counterparts id={id} />
 
       {design.related?.length > 0 && (
         <section aria-labelledby="rel-h">

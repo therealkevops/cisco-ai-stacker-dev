@@ -1,0 +1,119 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { MODELS, counterparts } from '../src/data/model.js';
+
+const oss = MODELS.oss;
+const products = oss.products;
+
+// A project with no connection looks as if it has no integrations, which is a claim. Each exception
+// says why the sources read document none, and a project that gains a link must come off the list.
+const NO_DOCUMENTED_INTEGRATION = {
+  qdrant: 'ChatQnA validates it as a vector store, but no project on this map documents an integration with it.',
+  pgvector: 'A Postgres extension; no listed project documents using it.',
+  sonic: 'A switch operating system; no listed project documents an integration with it.',
+  nccl: 'Documented against NVIDIA hardware and frameworks, none of which is a listed project.',
+  rccl: 'Retired repository; ROCm composes it, which is the only link.',
+  'uec-specs': 'A specification with no implementation among the listed projects.',
+  minio: 'Archived; no listed project documents an integration with it.',
+  lustre: 'A parallel file system; no listed project documents an integration with it.',
+  mlflow: 'Its README names platforms, not listed projects.',
+  langfuse: 'Its sources read name no listed project.',
+  falco: 'Its sources read name no listed project.',
+  opa: 'Its sources read name no listed project.',
+  spire: 'Its sources read name no listed project.',
+  'sigstore-cosign': 'Its sources read name no listed project.',
+  tetragon: 'Linked only through Cilium, its parent.',
+};
+
+test('the open-source focus has the expected structure', () => {
+  assert.equal(oss.data.focus, 'oss');
+  assert.ok(products.length >= 40, `${products.length} projects`);
+  assert.equal(oss.designs.length, 4);
+  for (const p of oss.data.primitives) assert.ok(products.some((n) => n.primitive === p.id), p.id);
+});
+
+test('every project is filled (foundation or community) or open (vendor-controlled), never anything else', () => {
+  for (const n of products) assert.ok(['oss', 'partner'].includes(n.vendor), n.id);
+});
+
+test('every project states its licence and who controls it', () => {
+  for (const n of products) {
+    const facts = new Map(oss.detailsOf(n.id).facts);
+    assert.ok(facts.get('Licence'), `${n.id}: licence`);
+    assert.ok(facts.get('Governance') || facts.get('Repository'), `${n.id}: governance`);
+  }
+});
+
+test('open-weight models are labelled as such, not as open source, and are dashed', () => {
+  const m = oss.nodeById.get('open-weight-models');
+  assert.equal(m.dashed, true);
+  assert.match(m.blurb, /open-weight/);
+  assert.match(oss.detailsOf('open-weight-models').caveat, /licence of each model/i);
+  assert.match(oss.detailsOf('open-weight-models').facts.find(([k]) => k === 'Class')[1], /none meets the OSI/);
+});
+
+test('MinIO is shown as archived, as a caution', () => {
+  assert.match(oss.detailsOf('minio').caveat, /NO LONGER MAINTAINED/);
+  assert.match(oss.detailsOf('minio').facts.find(([k]) => k === 'Class')[1], /archived/);
+});
+
+test('Grafana and the NVIDIA-controlled projects are flagged as vendor-controlled', () => {
+  for (const id of ['grafana', 'gpu-operator', 'nemo-guardrails', 'garak', 'dcgm-exporter', 'nccl', 'rccl', 'calico', 'slurm']) {
+    assert.equal(oss.nodeById.get(id).vendor, 'partner', id);
+  }
+});
+
+test('the Ultra Ethernet specification is dashed because its licence is not stated', () => {
+  assert.equal(oss.nodeById.get('uec-specs').dashed, true);
+  assert.match(oss.detailsOf('uec-specs').caveat, /not stated/);
+});
+
+test('each project connects to another, or is listed here with the reason it does not', () => {
+  for (const p of products) {
+    const count = oss.linksBetweenProducts(p.id).length;
+    if (NO_DOCUMENTED_INTEGRATION[p.id]) assert.ok(count <= 1, `${p.id} has ${count} connections; remove it from the exceptions`);
+    else assert.ok(count >= 1, `${p.id} has no connection and no documented reason`);
+  }
+  for (const [id, why] of Object.entries(NO_DOCUMENTED_INTEGRATION)) {
+    assert.ok(oss.nodeById.has(id), id);
+    assert.ok(why.length > 30, id);
+  }
+});
+
+test('every cross-focus pointer names a real node in the other focus', () => {
+  for (const n of oss.nodes) for (const a of n.alsoIn || []) {
+    assert.ok(MODELS[a.lens], `${n.id}: ${a.lens}`);
+    assert.ok(MODELS[a.lens].nodeById.has(a.id), `${n.id} -> ${a.lens}/${a.id}`);
+    assert.ok(a.relation && a.note.length > 20, `${n.id} -> ${a.id}`);
+  }
+});
+
+test('a vendor product shows its open-source counterpart', () => {
+  assert.ok(counterparts('cisco', 'isovalent').some((c) => c.node.id === 'cilium'));
+  assert.ok(counterparts('nvidia', 'run-ai').some((c) => c.node.id === 'kai-scheduler'));
+});
+
+test('designs are published documents, not products, and each says what it does not cover', () => {
+  for (const d of oss.designs) {
+    assert.match(d.url, /^https:\/\//);
+    assert.ok(d.bom.length >= 4, d.id);
+    assert.ok(d.offMap.length >= 1, d.id);
+  }
+  assert.match(oss.nodeById.get('oss-k8s-ai-conformance').blurb, /not a design/);
+});
+
+test('use cases that no document validates are drafts with no design', () => {
+  for (const id of ['enterprise-ai-cluster', 'agentic-ai', 'ai-factory-operations', 'llm-fine-tuning', 'multi-tenant-ai-cloud']) {
+    assert.deepEqual(oss.caseById.get(id).designs, [], id);
+    assert.equal(oss.caseById.get(id).status, 'draft', id);
+  }
+  assert.deepEqual(oss.caseById.get('secure-private-ai').designs, ['oss-nvidia-coco']);
+  assert.ok(!oss.caseById.has('ai-security-operations'));
+});
+
+test('the thin spots the checks found are stated', () => {
+  assert.match(oss.caseById.get('llm-fine-tuning').caveat, /TorchTune is unmaintained/);
+  assert.match(oss.caseById.get('enterprise-rag').caveat, /Intel/);
+  assert.match(oss.detailsOf('sonic').caveat, /RoCE/);
+  assert.match(oss.detailsOf('mcp').caveat, /mid-transition/);
+});
