@@ -157,6 +157,40 @@ const nodeById = new Map(NODES.map((n) => [n.id, n]));
   };
 
   // Which page a route's pieces name, if this lens has it.
+  // How hard a scenario is to assemble from separately governed parts: for each need, how many
+  // alternatives there are, and across a complete choice of one per required need, how many
+  // different bodies you depend on. Only meaningful where each product names its steward.
+  function burden(useCaseId) {
+    const uc = caseById.get(useCaseId);
+    const slots = uc.needs.map((need) => ({ need, options: need.products.map((p) => nodeById.get(p)) }));
+    if (!slots.every((s) => s.options.every((o) => o.steward))) return null;
+    const required = slots.filter((s) => s.need.role === 'required');
+    let fewest = Infinity;
+    let most = 0;
+    const walk = (i, chosen) => {
+      if (i === required.length) {
+        fewest = Math.min(fewest, chosen.size);
+        most = Math.max(most, chosen.size);
+        return;
+      }
+      for (const o of required[i].options) walk(i + 1, new Set([...chosen, o.steward.name]));
+    };
+    walk(0, new Set());
+    const all = [...new Map(slots.flatMap((s) => s.options).map((o) => [o.id, o])).values()];
+    const count = (fn) => all.filter(fn).length;
+    return {
+      slots,
+      options: all.length,
+      requiredSlots: required.length,
+      fewest,
+      most,
+      stewards: new Set(all.map((o) => o.steward.name)).size,
+      companyControlled: count((o) => o.steward.kind === 'company'),
+      notOsi: count((o) => o.dashed),
+      flagged: all.filter((o) => o.maturity && o.maturity !== 'no versions'),
+    };
+  }
+
   function resolve(kind, id, extra) {
     if (kind === 'product' && nodeById.has(id) && !nodeById.get(id).kind) return { kind: 'product', id };
     if (kind === 'design' && nodeById.has(id) && nodeById.get(id).kind === 'design') return { kind: 'design', id };
@@ -170,7 +204,7 @@ const nodeById = new Map(NODES.map((n) => [n.id, n]));
 
 
   return { data, primitives: PRIMITIVES, nodes: NODES, links: LINKS, linkTypes: LINK_TYPES, cases: USE_CASES,
-    nodeById, primitiveById, typeById, caseById, detailsOf, primitiveDetailsOf, products, designs, productsIn, phrase, linksOf, productLinks, linksBetweenProducts, membersOf, coverage, designsIncluding, primitiveLinks, assess, summarise, caseProducts, casesNeeding, casesDelivered, layoutOrder, href, resolve };
+    nodeById, primitiveById, typeById, caseById, detailsOf, primitiveDetailsOf, products, designs, productsIn, phrase, linksOf, productLinks, linksBetweenProducts, membersOf, coverage, designsIncluding, primitiveLinks, assess, summarise, caseProducts, casesNeeding, casesDelivered, burden, layoutOrder, href, resolve };
 }
 
 export const MODELS = { cisco: buildModel(CISCO), nvidia: buildModel(NVIDIA), oss: buildModel(OSS) };

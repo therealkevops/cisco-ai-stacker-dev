@@ -442,7 +442,7 @@ function NeedRow({ need, found }) {
 }
 
 function UseCasePanel({ id, designId }) {
-  const { data, nodeById, designs, caseById, assess, summarise, href } = useModel();
+  const { data, nodeById, designs, caseById, assess, summarise, burden, href } = useModel();
   const elsewhere = Object.values(MODELS).filter((m) => m.data.id !== data.id && m.caseById.has(id));
   const uc = caseById.get(id);
   const assessed = designId ? assess(id, designId) : null;
@@ -452,6 +452,7 @@ function UseCasePanel({ id, designId }) {
   const rows = (role) => uc.needs.map((need, i) => ({ need, found: assessed?.[i] })).filter((r) => r.need.role === role);
   const gaps = assessed ? assessed.filter((a) => !a.met) : [];
   const fit = (d) => summarise(assess(id, d.id));
+  const choice = burden(id);
 
   const designRow = (d) => (
     <li key={d.id}>
@@ -518,6 +519,42 @@ function UseCasePanel({ id, designId }) {
         )}
         {design && <p className="src"><a href={href.usecase(id)}>Remove the overlay</a></p>}
       </section>
+
+      {choice && (
+        <section aria-labelledby="choice-h">
+          <h2 id="choice-h" className="label">What it takes to assemble</h2>
+          <p className="lede small">
+            {choice.requiredSlots} required decisions, {choice.options} projects to choose between. A complete set of choices
+            depends on between {choice.fewest} and {choice.most} separately governed bodies, and nobody supports the whole.
+          </p>
+          <ul className="choices">
+            {choice.slots.map((s) => (
+              <li key={s.need.products.join()}>
+                <span className={`choice-n ${s.need.role}`}>{s.options.length}</span>
+                <span>
+                  {s.options.map((o, i) => (
+                    <React.Fragment key={o.id}>{i > 0 && ', '}<a href={href.product(o.id)}>{o.name}</a></React.Fragment>
+                  ))}
+                  <span className="sub"> ({s.need.role})</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+          <ul className="bom">
+            <li>{choice.stewards} different owners across the {choice.options} projects; {choice.companyControlled} are controlled by a single company.</li>
+            <li>{choice.notOsi} {choice.notOsi === 1 ? 'is' : 'are'} not under an OSI-approved licence for all their code.</li>
+            <li>{choice.flagged.length} are pre-1.0, in maintenance mode or archived: {choice.flagged.map((o) => `${o.name} (${o.maturity})`).join(', ')}.</li>
+          </ul>
+          {uc.support?.length > 0 && (
+            <>
+              <p className="sublabel">Who supports it</p>
+              <ul className="bom">
+                {uc.support.map((x) => <li key={x.text}>{x.text} <a className="srclink" href={x.url} target="_blank" rel="noreferrer">source</a></li>)}
+              </ul>
+            </>
+          )}
+        </section>
+      )}
 
       {uc.sizing?.length > 0 && (
         <section aria-labelledby="size-h">
