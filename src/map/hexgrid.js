@@ -36,7 +36,7 @@ export const hexDistance = (a, b) => {
 };
 
 // Place the primitives and their products. `ordered` maps a primitive id to its products, best
-// first. Each primitive owns the three outer rings of its wedge, and its products take those cells
+// first. Each primitive owns the three outer rings of its wedge (four when it holds more than nine products), and its products take those cells
 // nearest the primitive first, so every cluster stays one connected clump beside its primitive.
 export function layoutMap(primitives, ordered, size) {
   const cells = new Map();
@@ -45,7 +45,9 @@ export function layoutMap(primitives, ordered, size) {
   for (const p of primitives) {
     const [q, r] = sectorCells(p.sector, 1)[0];
     put(p.id, q, r, 'primitive');
-    const wedge = [2, 3, 4]
+    const count = (ordered.get(p.id) || []).length;
+    // Nine cells is a full wedge; only a crowded one spills into a fifth ring.
+    const wedge = (count > 9 ? [2, 3, 4, 5] : [2, 3, 4])
       .flatMap((ring) => sectorCells(p.sector, ring).map((cell, j) => ({ cell, ring, j })))
       .sort((x, y) => hexDistance([q, r], x.cell) - hexDistance([q, r], y.cell) || x.ring - y.ring || x.j - y.j);
     (ordered.get(p.id) || []).forEach((item, i) => put(item, wedge[i].cell[0], wedge[i].cell[1], 'product'));
